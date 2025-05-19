@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/ianshapiro1/shoutbin#readme",
   "dependencies": {
-    "fastify": "^5.3.3"
+    "fastify": "^5.3.3",
+    "fastify-static": "^4.7.0"
   }
 }
