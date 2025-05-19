@@ -1,0 +1,23 @@
+{
+  "name": "shoutbin",
+  "version": "1.0.0",
+  "description": "A minimalist, anonymous pastebin for self-destructing messages.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ianshapiro1/shoutbin.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ianshapiro1/shoutbin/issues"
+  },
+  "homepage": "https://github.com/ianshapiro1/shoutbin#readme",
+  "dependencies": {
+    "fastify": "^5.3.3"
+  }
+}
