@@ -10,13 +10,15 @@ Development Log/Notes:
 
 TODO:
 - passphrase implementation
-- add below to setup instructions or create migration for it:
+- create migration for messages:
+```
 CREATE TABLE messages (
   id VARCHAR(8) PRIMARY KEY,
   message TEXT NOT NULL,
   passphrase TEXT,
   expires BIGINT NOT NULL
 );
+```
 - input sanitization
 - rate limiting
 - encryption
