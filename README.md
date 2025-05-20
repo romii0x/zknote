@@ -1,5 +1,5 @@
 # shoutbin
-A minimalist, anonymous pastebin for self-destructing messages.
+Anonymous pastebin for self-destructing messages.
 
 
 Development Log/Notes:
