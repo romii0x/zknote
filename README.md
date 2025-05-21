@@ -8,9 +8,11 @@ Development Log/Notes:
 - created template for site
 - implement database
 
-TODO:
-- passphrase implementation
-- create migration for messages:
+## TODO:
+
+#### Security
+- passphrase implementation using zero knowledge in format uuid+base64encodedkey
+- create migration for messages (passphrase needs to be removed when zero knowledge encryption is added):
 ```
 CREATE TABLE messages (
   id VARCHAR(8) PRIMARY KEY,
@@ -19,9 +21,8 @@ CREATE TABLE messages (
   expires BIGINT NOT NULL
 );
 ```
-- input sanitization
-- rate limiting
-- encryption
+- basic security features including input sanitization, rate limiting, output encoding
 - clean up cron job
-- changing expiration time
-- ui
+#### Site
+- changing expiration time (could be a slider from *when accessed* to *7 days*)
+- ui elements (something simple and clean like bootstrap)
