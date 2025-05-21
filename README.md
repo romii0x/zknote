@@ -1,6 +1,7 @@
 # shoutbin
 Anonymous pastebin for self-destructing messages.
 
+ShoutBin stores encrypted messages identified by unique keys. Encryption and decryption happen entirely on the client side, so the server never sees plaintext data. Messages expire automatically upon access or after a set time.
 
 Development Log/Notes:
 
@@ -9,8 +10,10 @@ Development Log/Notes:
 - implement database
 
 5/20/2025
-- implemented zero knowledge architecture
+- implemented zero knowledge encryption
 - improved ui
+- now using full length base64url encoded uuid
+- various security fixes (html escaping, validation, error handling)
 
 
 ## TODO:
@@ -21,7 +24,7 @@ Development Log/Notes:
 - create migration for messages:
 ```
 CREATE TABLE messages (
-  id VARCHAR(8) PRIMARY KEY,
+  id VARCHAR(32) PRIMARY KEY,
   message TEXT NOT NULL,
   iv TEXT NOT NULL,
   expires BIGINT NOT NULL
@@ -34,7 +37,7 @@ CREATE TABLE messages (
 
 #### Site
 - changing expiration time (could be a slider from *when accessed* to *7 days*)
-- ui elements (something simple and clean like bootstrap)
+- ui improvements
 
 ### Future
 - passphrase-based key derivation for optional user passphrases

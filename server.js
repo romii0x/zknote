@@ -13,12 +13,12 @@ const __dirname = path.dirname(__filename);
 const fastify = Fastify({ logger: true });
 
 fastify.register(fastifyStatic, {
-  root: path.join(__dirname, "public"),
-  prefix: "/",
+    root: path.join(__dirname, "public"),
+    prefix: "/",
 });
 
 fastify.get("/", (req, reply) => {
-  reply.sendFile("index.html");
+    reply.sendFile("index.html");
 });
 
 fastify.register(shoutPlugin);
@@ -26,9 +26,9 @@ fastify.register(shoutPlugin);
 const port = process.env.PORT || 3000;
 
 fastify.listen({ port }, (err, address) => {
-  if (err) {
-    fastify.log.error(err);
-    process.exit(1);
-  }
-  console.log(`🚀 ShoutBin running at ${address}`);
+    if (err) {
+        fastify.log.error(err);
+        process.exit(1);
+    }
+    console.log(`🚀 ShoutBin running at ${address}`);
 });
