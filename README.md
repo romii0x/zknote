@@ -8,21 +8,34 @@ Development Log/Notes:
 - created template for site
 - implement database
 
+5/20/2025
+- implemented zero knowledge architecture
+- improved ui
+
+
 ## TODO:
 
 #### Security
-- passphrase implementation using zero knowledge in format uuid+base64encodedkey
-- create migration for messages (passphrase needs to be removed when zero knowledge encryption is added):
+- validation on all inputs (almost done)
+- expired message clean up job
+- create migration for messages:
 ```
 CREATE TABLE messages (
   id VARCHAR(8) PRIMARY KEY,
   message TEXT NOT NULL,
-  passphrase TEXT,
+  iv TEXT NOT NULL,
   expires BIGINT NOT NULL
 );
 ```
-- basic security features including input sanitization, rate limiting, output encoding
-- clean up cron job
+- test input sanitization
+- implement rate limiting
+- HSTS headers
+- db encryption at rest
+
 #### Site
 - changing expiration time (could be a slider from *when accessed* to *7 days*)
 - ui elements (something simple and clean like bootstrap)
+
+### Future
+- passphrase-based key derivation for optional user passphrases
+- anonymous usage analytics (maybe)
