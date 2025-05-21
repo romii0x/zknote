@@ -2,13 +2,36 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>ShoutBin</title>
+  <title>ShoutBin — Self-Destructing Messages</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      max-width: 600px;
+    }
+    textarea {
+      width: 100%;
+      height: 150px;
+      font-size: 1rem;
+      padding: 0.5rem;
+      resize: vertical;
+      box-sizing: border-box;
+    }
+    #result {
+      margin-top: 1rem;
+      word-break: break-all;
+    }
+    button {
+      margin-top: 0.5rem;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
   <h1>ShoutBin — Self-Destructing Messages</h1>
   <textarea id="message" placeholder="Write your message here"></textarea>
-  <br />
-  <input id="passphrase" placeholder="Optional passphrase" />
   <br />
   <button id="send">Send Shout</button>
 
