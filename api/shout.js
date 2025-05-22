@@ -21,39 +21,69 @@ function uuidToBase64url(uuid) {
         .replace(/=+$/, "");
 }
 
+const idPattern = "^[A-Za-z0-9_-]{22}$"; //base64url from 128 bit uuid
 
 //fastify routes
 export default async function shoutPlugin(fastify) {
-  // POST message to /api/shout
-    fastify.post("/api/shout", async (request, reply) => {
+    //POST /api/shout
+    fastify.post("/api/shout", {
+        schema: {
+            body: {
+                type: "object",
+                required: ["message", "iv"],
+                properties: {
+                message: { type: "string", minLength: 1, maxLength: 5000 },
+                iv: {
+                    type: "string",
+                    pattern: "^[A-Za-z0-9_-]{16,24}$" //might need reviewed later
+                }
+                }
+            },
+            response: {
+                200: {
+                type: "object",
+                properties: {
+                    id: { type: "string", pattern: idPattern },
+                    url: { type: "string" }
+                }
+                }
+            }
+        }
+    }, async (request, reply) => {
         const { message, iv } = request.body;
 
-        if (!message || typeof message !== "string" || message.length > 5000) {
-            return reply.status(400).send({ error: "Invalid message" });
-        }
-
         const id = uuidToBase64url(randomUUID());
-        const expires = Date.now() + 24 * 60 * 60 * 1000; //24hrs hardcoded; needs changed once user preferences are set in frontend
+        const expires = Date.now() + 24 * 60 * 60 * 1000;
 
         try {
-            await query(
-                `INSERT INTO messages (id, message, iv, expires) VALUES ($1, $2, $3, $4)`,
-                [id, message, iv, expires]
-            );
+        await query(
+            `INSERT INTO messages (id, message, iv, expires) VALUES ($1, $2, $3, $4)`,
+            [id, message, iv, expires]
+        );
         } catch (err) {
-            fastify.log.error(err);
-            return reply.status(500).send({ error: "Database insert failed" });
+        fastify.log.error(err);
+        return reply.status(500).send({ error: "Database insert failed" });
         }
 
         return { id, url: `/shout/${id}` };
-  });
+    });
 
-  // GET message at /shout/:id
-    fastify.get("/shout/:id", async (request, reply) => {
+    //GET /shout/:id
+    fastify.get("/shout/:id", {
+        schema: {
+            params: {
+                type: "object",
+                properties: {
+                id: { type: "string", pattern: idPattern }
+                },
+                required: ["id"]
+            }
+        }
+    }, async (request, reply) => {
         const { id } = request.params;
 
         try {
-            const res = await query(
+        const res = await query(
             `SELECT message, iv, expires FROM messages WHERE id = $1`,
             [id]
         );
@@ -79,22 +109,32 @@ export default async function shoutPlugin(fastify) {
             <p id="status">Decrypting...</p>
             <script type="module" src="/decrypt.js"></script>
         `);
-        
         } catch (err) {
-            fastify.log.error(err);
-            return reply.status(500).type("text/html").send("<h2>Server error</h2>");
+        fastify.log.error(err);
+        return reply.status(500).type("text/html").send("<h2>Server error</h2>");
         }
     });
-    // DELETE message by id
-    fastify.delete("/api/shout/:id", async (request, reply) => {
+
+    //DELETE /api/shout/:id
+    fastify.delete("/api/shout/:id", {
+        schema: {
+        params: {
+            type: "object",
+            properties: {
+            id: { type: "string", pattern: idPattern }
+            },
+            required: ["id"]
+        }
+        }
+    }, async (request, reply) => {
         const { id } = request.params;
 
         try {
-            await query(`DELETE FROM messages WHERE id = $1`, [id]);
-            return reply.status(204).send();
+        await query(`DELETE FROM messages WHERE id = $1`, [id]);
+        return reply.status(204).send();
         } catch (err) {
-            fastify.log.error(err);
-            return reply.status(500).send({ error: "Failed to delete message" });
+        fastify.log.error(err);
+        return reply.status(500).send({ error: "Failed to delete message" });
         }
     });
 }
