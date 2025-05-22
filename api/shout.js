@@ -52,17 +52,21 @@ export default async function shoutPlugin(fastify) {
     }, async (request, reply) => {
         const { message, iv } = request.body;
 
+        if (typeof iv !== "string" || iv.length > 32 || !/^[A-Za-z0-9_-]+$/.test(iv)) {
+            return reply.status(400).send({ error: "Invalid IV format" });
+        }
+        
         const id = uuidToBase64url(randomUUID());
         const expires = Date.now() + 24 * 60 * 60 * 1000;
 
         try {
-        await query(
-            `INSERT INTO messages (id, message, iv, expires) VALUES ($1, $2, $3, $4)`,
-            [id, message, iv, expires]
+            await query(
+                `INSERT INTO messages (id, message, iv, expires) VALUES ($1, $2, $3, $4)`,
+                [id, message, iv, expires]
         );
         } catch (err) {
-        fastify.log.error(err);
-        return reply.status(500).send({ error: "Database insert failed" });
+            fastify.log.error(err);
+            return reply.status(500).send({ error: "Database insert failed" });
         }
 
         return { id, url: `/shout/${id}` };

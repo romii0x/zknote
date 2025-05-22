@@ -18,7 +18,7 @@ const __dirname = path.dirname(__filename);
 
 const fastify = Fastify({ logger: true });
 
-//helmet with CSP
+//CSP
 await fastify.register(fastifyHelmet, {
   contentSecurityPolicy: {
     useDefaults: true,
