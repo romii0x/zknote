@@ -77,55 +77,9 @@ export default async function shoutPlugin(fastify) {
             <noscript><p>This site requires JavaScript to decrypt the message.</p></noscript>
             <div id="data" data-message="${safeMessage}" data-iv="${safeIv}" data-id="${safeId}"></div>
             <p id="status">Decrypting...</p>
-            <script type="module">
-            const status = document.getElementById("status");
-            const container = document.getElementById("data");
-            const messageId = container.dataset.id;
-
-            function base64ToBytes(b64) {
-                return Uint8Array.from(atob(b64), c => c.charCodeAt(0));
-            }
-
-            async function decrypt() {
-                const hash = location.hash;
-                const keyParam = new URLSearchParams(hash.slice(1)).get("k");
-
-                if (!keyParam) {
-                    status.textContent = "Missing decryption key in URL.";
-                    return;
-                }
-
-                try {
-                    const keyBytes = base64ToBytes(keyParam);
-                    const key = await crypto.subtle.importKey(
-                    "raw",
-                    keyBytes,
-                    { name: "AES-GCM" },
-                    false,
-                    ["decrypt"]
-                );
-
-                const ciphertext = base64ToBytes(container.dataset.message);
-                const iv = base64ToBytes(container.dataset.iv);
-
-                const plaintextBuffer = await crypto.subtle.decrypt(
-                    { name: "AES-GCM", iv },
-                    key,
-                    ciphertext
-                );
-
-                const plaintext = new TextDecoder().decode(plaintextBuffer);
-                status.innerHTML = \`<pre>\${plaintext}</pre>\`;
-                await fetch('/api/shout/' + messageId, { method: 'DELETE' });
-                } catch (err) {
-                    console.error(err);
-                    status.textContent = "Failed to decrypt message. Invalid key?";
-                }
-            }
-
-            decrypt();
-            </script>
+            <script type="module" src="/decrypt.js"></script>
         `);
+        
         } catch (err) {
             fastify.log.error(err);
             return reply.status(500).type("text/html").send("<h2>Server error</h2>");
