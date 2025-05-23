@@ -20,25 +20,25 @@ const fastify = Fastify({ logger: true });
 
 //CSP
 await fastify.register(fastifyHelmet, {
-  contentSecurityPolicy: {
-    useDefaults: true,
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
-      styleSrc: ["'self'"],
-      imgSrc: ["'self'", "data:"],
-      objectSrc: ["'none'"],
-      baseUri: ["'self'"],
-      frameAncestors: ["'none'"],
+    contentSecurityPolicy: {
+        useDefaults: true,
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'"],
+            styleSrc: ["'self'"],
+            imgSrc: ["'self'", "data:"],
+            objectSrc: ["'none'"],
+            baseUri: ["'self'"],
+            frameAncestors: ["'none'"],
+        }
     }
-  }
 });
 
 //rate limiting (basic logic for now)
 await fastify.register(rateLimit, {
-  max: 100,
-  timeWindow: "1 minute",
-  ban: 1,
+    max: 100,
+    timeWindow: "1 minute",
+    ban: 1,
 });
 
 

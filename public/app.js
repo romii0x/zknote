@@ -1,37 +1,50 @@
-const result = document.getElementById("result");
+document.addEventListener("DOMContentLoaded", () => {
+    const textarea = document.getElementById("message");
+    const result = document.getElementById("result");
+    const charCount = document.getElementById("char-count");
 
-document.getElementById("send").addEventListener("click", async () => {
-    const message = document.getElementById("message").value;
+    //character limit
+    textarea.addEventListener("input", () => {
+    charCount.textContent = `${textarea.value.length} / 5000`;
+    });
 
-    if (!message.trim()) {
-        result.textContent = "Message cannot be empty.";
-        return;
-    }
+    document.getElementById("send").addEventListener("click", async () => {
+        const message = textarea.value;
 
-    try {
-        const { ciphertext, key, iv } = await encryptMessage(message);
-
-        const response = await fetch("/api/shout", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: ciphertext, iv }),
-        });
-
-        if (!response.ok) {
-            result.textContent = "Failed to send message.";
+        if (!message.trim()) {
+            result.textContent = "Message cannot be empty.";
             return;
         }
 
-        const data = await response.json();
-        const fullUrl = `${location.origin}${data.url}#k=${encodeURIComponent(key)}`;
-        result.innerHTML = `🔗 Your secret link: <a href="${fullUrl}" target="_blank">${fullUrl}</a>`;
+        if (message.length > 5000) {
+            result.textContent = "Message exceeds 5000 character limit.";
+            return;
+        }
 
-    } catch (err) {
-        result.textContent = "Encryption or network error occurred.";
-        console.error(err);
-    }
+        try {
+            const { ciphertext, key, iv } = await encryptMessage(message);
+
+            const response = await fetch("/api/shout", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: ciphertext, iv }),
+            });
+
+            if (!response.ok) {
+                result.textContent = "Failed to send message.";
+                return;
+            }
+
+            const data = await response.json();
+            const fullUrl = `${location.origin}${data.url}#k=${encodeURIComponent(key)}`;
+            result.innerHTML = `🔗 Your secret link: <a href="${fullUrl}" target="_blank">${fullUrl}</a>`;
+
+        } catch (err) {
+            result.textContent = "Encryption or network error occurred.";
+            console.error(err);
+        }
+    });
 });
-
 
 function uint8ArrayToBase64(u8) {
     return btoa(String.fromCharCode(...u8));
