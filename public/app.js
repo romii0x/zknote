@@ -1,7 +1,16 @@
 document.addEventListener("DOMContentLoaded", () => {
+    const sendBtn = document.getElementById("send");
     const textarea = document.getElementById("message");
     const result = document.getElementById("result");
     const charCount = document.getElementById("char-count");
+
+    
+    //check webcrypto support
+    if (window.crypto?.subtle) {
+        sendBtn.disabled = false;
+    } else {
+        document.getElementById("result").textContent = "Your browser doesn't support secure encryption.";
+    }
 
     //character limit
     textarea.addEventListener("input", () => {
@@ -46,8 +55,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
-function uint8ArrayToBase64(u8) {
-    return btoa(String.fromCharCode(...u8));
+function uint8ArrayToBase64url(u8) {
+  const base64 = btoa(String.fromCharCode(...u8));
+  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
 async function encryptMessage(plaintext) {
@@ -66,8 +76,8 @@ async function encryptMessage(plaintext) {
     );
 
     return {
-        ciphertext: uint8ArrayToBase64(new Uint8Array(ciphertext)),
-        key: uint8ArrayToBase64(new Uint8Array(rawKey)),
-        iv: uint8ArrayToBase64(iv),
+        ciphertext: uint8ArrayToBase64url(new Uint8Array(ciphertext)),
+        key: uint8ArrayToBase64url(new Uint8Array(rawKey)),
+        iv: uint8ArrayToBase64url(iv),
     };
 }

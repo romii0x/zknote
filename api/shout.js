@@ -35,7 +35,7 @@ export default async function shoutPlugin(fastify) {
                 message: { type: "string", minLength: 1, maxLength: 5000 },
                 iv: {
                     type: "string",
-                    pattern: "^[A-Za-z0-9_-]{16,24}$" //might need reviewed later
+                    pattern: "^[A-Za-z0-9_-]{16,24}$"
                 }
                 }
             },
@@ -52,10 +52,12 @@ export default async function shoutPlugin(fastify) {
     }, async (request, reply) => {
         const { message, iv } = request.body;
 
-        if (typeof iv !== "string" || iv.length > 32 || !/^[A-Za-z0-9_-]+$/.test(iv)) {
+        fastify.log.info(`Received message length: ${message.length}, iv length: ${iv.length}`);
+        
+        if (typeof iv !== "string" || iv.length < 16 ||iv.length > 24 || !/^[A-Za-z0-9_-]+$/.test(iv)) {
             return reply.status(400).send({ error: "Invalid IV format" });
         }
-        
+
         const id = uuidToBase64url(randomUUID());
         const expires = Date.now() + 24 * 60 * 60 * 1000;
 
