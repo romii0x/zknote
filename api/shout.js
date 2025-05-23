@@ -32,7 +32,7 @@ export default async function shoutPlugin(fastify) {
                 type: "object",
                 required: ["message", "iv"],
                 properties: {
-                message: { type: "string", minLength: 1, maxLength: 5000 },
+                message: { type: "string", minLength: 1, maxLength: 8000 },
                 iv: {
                     type: "string",
                     pattern: "^[A-Za-z0-9_-]{16,24}$"
@@ -53,7 +53,7 @@ export default async function shoutPlugin(fastify) {
         const { message, iv } = request.body;
 
         fastify.log.info(`Received message length: ${message.length}, iv length: ${iv.length}`);
-        
+
         if (typeof iv !== "string" || iv.length < 16 ||iv.length > 24 || !/^[A-Za-z0-9_-]+$/.test(iv)) {
             return reply.status(400).send({ error: "Invalid IV format" });
         }

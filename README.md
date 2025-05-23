@@ -39,6 +39,11 @@ Each message is linked to a unique, unguessable URL and is automatically deleted
 - Implemented global rate limiting
 - Enforced strong Content Security Policy headers
 
+**2025-05-23**
+- fixed iv encoding bug
+- improved styling
+- fixed message length error
+
 ---
 ## TODO:
 
