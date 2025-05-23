@@ -2,6 +2,12 @@ function base64ToBytes(b64) {
     return Uint8Array.from(atob(b64), c => c.charCodeAt(0));
 }
 
+function base64urlToBytes(b64url) {
+    const base64 = b64url.replace(/-/g, "+").replace(/_/g, "/")
+        + "===".slice((b64url.length + 3) % 4);
+    return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+}
+
 async function decryptMessage() {
     const status = document.getElementById("status");
     const container = document.getElementById("data");
@@ -34,7 +40,7 @@ async function decryptMessage() {
         );
 
         const ciphertext = base64ToBytes(ciphertextB64);
-        const iv = base64ToBytes(ivB64);
+        const iv = base64urlToBytes(ivB64);
 
         const plaintextBuffer = await crypto.subtle.decrypt(
             { name: "AES-GCM", iv },

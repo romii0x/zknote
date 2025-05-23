@@ -55,6 +55,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 });
 
+function uint8ArrayToBase64(u8) {
+    return btoa(String.fromCharCode(...u8));
+}
+
 function uint8ArrayToBase64url(u8) {
   const base64 = btoa(String.fromCharCode(...u8));
   return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -76,8 +80,8 @@ async function encryptMessage(plaintext) {
     );
 
     return {
-        ciphertext: uint8ArrayToBase64url(new Uint8Array(ciphertext)),
-        key: uint8ArrayToBase64url(new Uint8Array(rawKey)),
+        ciphertext: uint8ArrayToBase64(new Uint8Array(ciphertext)),
+        key: uint8ArrayToBase64(new Uint8Array(rawKey)),
         iv: uint8ArrayToBase64url(iv),
     };
 }
