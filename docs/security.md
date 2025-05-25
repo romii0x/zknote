@@ -38,7 +38,6 @@ Basic rate limiting in place using @fastify/rate-limit:
 
 Offending clients can be temporarily banned.
 
-
 ## ⚠️ Planned / In Progress
 ### ⚠️ Optional Passphrase-Based Encryption
 Will allow users to set a custom password to derive the encryption key.
@@ -47,8 +46,3 @@ Enhances security for users who prefer memorized secrets over URL fragments.
 
 ### ⚠️ HTTPS Redirect
 For self-hosted deployments without a proxy, a redirect to HTTPS will be added
-
-### ⚠️ Message Expiration Cleanup
-Expired messages are currently ignored on read, but still stored.
-
-A background job or scheduled cleanup will be implemented to remove expired messages proactively.

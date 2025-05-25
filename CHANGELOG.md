@@ -21,11 +21,16 @@
 - improved styling
 - fixed message length error
 
----
+**2025-05-25**
+- added expired message clean up job
+- fixed error handling and improved delete upon access logic
+    - shouts now attempt to delete upon access and completed decryption
+- separated README into multiple documentation files and created changelog
+
+
 ## TODO:
 
 ### Security
-- expired message clean up job
 - create migration for messages:
 ```
 CREATE TABLE messages (
