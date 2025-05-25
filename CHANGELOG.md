@@ -27,6 +27,7 @@
 - fixed error handling and improved delete upon access logic
     - shouts now attempt to delete upon access and completed decryption
 - separated README into multiple documentation files and created changelog
+- added optional passphrase for encryption
 
 
 ## TODO:
@@ -48,5 +49,4 @@ CREATE TABLE messages (
 - ui improvements
 
 ### Future
-- passphrase-based key derivation for optional user passphrases
 - anonymous usage analytics (maybe)

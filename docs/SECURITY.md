@@ -40,11 +40,12 @@ Basic rate limiting in place using @fastify/rate-limit:
 
 Offending clients can be temporarily banned.
 
-## ⚠️ Planned / In Progress
-### ⚠️ Optional Passphrase-Based Encryption
-Will allow users to set a custom password to derive the encryption key.
+### ✅ Optional Passphrase-Based Encryption
+Allows users to set a custom password to derive the encryption key.
 
 Enhances security for users who prefer memorized secrets over URL fragments.
+
+## ⚠️ Planned / In Progress
 
 ### ⚠️ HTTPS Redirect
 For self-hosted deployments without a proxy, a redirect to HTTPS will be added
