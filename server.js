@@ -73,7 +73,7 @@ fastify.get("/", (req, reply) => {
 fastify.register(shoutPlugin);
 
 //404 handler
-fastify.setNotFoundHandler((request, reply) => {
+fastify.setNotFoundHandler((req, reply) => {
     return reply.code(404).type("text/html").sendFile("404.html");
 });
 

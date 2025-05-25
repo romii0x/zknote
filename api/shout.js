@@ -32,11 +32,15 @@ export default async function shoutPlugin(fastify) {
                 type: "object",
                 required: ["message", "iv"],
                 properties: {
-                message: { type: "string", minLength: 1, maxLength: 8000 },
-                iv: {
-                    type: "string",
-                    pattern: "^[A-Za-z0-9_-]{16,24}$"
-                }
+                    message: { type: "string", minLength: 1, maxLength: 8000 },
+                    iv: {
+                        type: "string",
+                        pattern: "^[A-Za-z0-9_-]{16,24}$"
+                    },
+                    salt: {  //optional salt for passphrase encryption
+                        type: "string",
+                        pattern: "^[A-Za-z0-9_-]{16,64}$"
+                    }
                 }
             },
             response: {
@@ -50,7 +54,11 @@ export default async function shoutPlugin(fastify) {
             }
         }
     }, async (request, reply) => {
-        const { message, iv } = request.body;
+        const { message, iv, salt } = request.body;
+
+        if (salt && !/^[A-Za-z0-9_-]{16,64}$/.test(salt)) {
+            return reply.status(400).send({ error: "Invalid salt format" });
+        }
 
         fastify.log.info(`Received message length: ${message.length}, iv length: ${iv.length}`);
 
@@ -66,9 +74,9 @@ export default async function shoutPlugin(fastify) {
         //create the database entry
         try {
             await query(
-                `INSERT INTO messages (id, message, iv, expires) VALUES ($1, $2, $3, $4)`,
-                [id, message, iv, expires]
-        );
+                `INSERT INTO messages (id, message, iv, salt, expires) VALUES ($1, $2, $3, $4, $5)`,
+                [id, message, iv, salt || null, expires]
+            );
         } catch (err) {
             fastify.log.error(err);
             return reply.status(500).send({ error: "Database insert failed" });
@@ -94,7 +102,7 @@ export default async function shoutPlugin(fastify) {
         //try to select shout by id
         try {
         const res = await query(
-            `SELECT message, iv, expires FROM messages WHERE id = $1`,
+            `SELECT message, iv, salt, expires FROM messages WHERE id = $1`,
             [id]
         );
 
@@ -112,17 +120,20 @@ export default async function shoutPlugin(fastify) {
             return reply.code(410).type("text/html").sendFile("404.html");
         }
 
-        //delete upon access
-        await query(`DELETE FROM messages WHERE id = $1`, [id]);
-        fastify.log.info(`🗑️ Deleted shout after access: ${id}`);
-
         const safeMessage = escapeHtml(msg.message);
         const safeIv = escapeHtml(msg.iv);
         const safeId = escapeHtml(id);
+        const safeSalt = msg.salt ? escapeHtml(msg.salt) : "";
 
         return reply.type("text/html").send(`
             <noscript><p>This site requires JavaScript to decrypt the message.</p></noscript>
-            <div id="data" data-message="${safeMessage}" data-iv="${safeIv}" data-id="${safeId}"></div>
+            <div 
+                id="data" 
+                data-message="${safeMessage}" 
+                data-iv="${safeIv}" 
+                data-id="${safeId}"
+                ${safeSalt ? `data-salt="${safeSalt}"` : ""}
+            ></div>
             <p id="status">Decrypting...</p>
             <script type="module" src="/decrypt.js"></script>
         `);
