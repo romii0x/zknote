@@ -14,3 +14,9 @@ Each message is linked to a unique, unguessable URL and is automatically deleted
 
 - 🧠 **Zero Knowledge**  
   The server stores only ciphertext. Keys never leave the client.
+
+## 📖 Documentation
+
+- [🔐 Security Overview](docs/SECURITY.md)  
+
+- [📋 Changelog](CHANGELOG.md)  
