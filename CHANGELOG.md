@@ -38,8 +38,9 @@
 CREATE TABLE messages (
   id VARCHAR(32) PRIMARY KEY,
   message TEXT NOT NULL,
-  iv VARCHAR(32) NOT NULL,
-  expires BIGINT NOT NULL
+  expires BIGINT NOT NULL,
+  iv VARCHAR(32),
+  salt TEXT
 );
 ```
 - HSTS headers
