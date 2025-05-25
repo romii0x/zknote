@@ -95,14 +95,14 @@ export default async function shoutPlugin(fastify) {
         );
 
         if (res.rowCount === 0) {
-            return reply.status(404).type("text/html").send("<h2>Not found or expired</h2>");
+            return reply.code(404).type("text/html").sendFile("404.html");
         }
 
         const msg = res.rows[0];
 
-        if (msg.expires < Date.now()) {
+        if (msg.expires && msg.expires < Date.now()) {
             await query(`DELETE FROM messages WHERE id = $1`, [id]);
-            return reply.status(404).type("text/html").send("<h2>Not found or expired</h2>");
+            return reply.code(410).type("text/html").sendFile("404.html");
         }
 
         const safeMessage = escapeHtml(msg.message);
@@ -117,7 +117,7 @@ export default async function shoutPlugin(fastify) {
         `);
         } catch (err) {
         fastify.log.error(err);
-        return reply.status(500).type("text/html").send("<h2>Server error</h2>");
+        return reply.code(500).type("text/html").send("<h2>Server error</h2>");
         }
     });
 
