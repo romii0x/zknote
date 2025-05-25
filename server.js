@@ -8,6 +8,8 @@ import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 
 import shoutPlugin from "./api/shout.js";
+import cron from 'node-cron';
+import { deleteExpiredMessages } from './jobs/cleanup.js';
 
 
 
@@ -42,6 +44,7 @@ await fastify.register(rateLimit, {
 });
 
 
+//register routes and plugins
 fastify.register(fastifyStatic, {
     root: path.join(__dirname, "public"),
     prefix: "/",
@@ -53,6 +56,22 @@ fastify.get("/", (req, reply) => {
 
 fastify.register(shoutPlugin);
 
+//404 handler
+fastify.setNotFoundHandler((request, reply) => {
+    return reply.code(404).type("text/html").sendFile("404.html");
+});
+
+//schedule cleanup every 5 minutes
+cron.schedule('*/5 * * * *', async () => {
+  try {
+    await deleteExpiredMessages();
+    console.log('🧹 Cleanup job ran at', new Date());
+  } catch (err) {
+    console.error('Cleanup job failed:', err);
+  }
+});
+
+//start the server
 const port = process.env.PORT || 3000;
 
 fastify.listen({ port }, (err, address) => {
