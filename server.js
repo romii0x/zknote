@@ -18,7 +18,10 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const fastify = Fastify({ logger: true });
+const fastify = Fastify({
+    logger: true,
+    trustProxy: true
+});
 
 //CSP
 await fastify.register(fastifyHelmet, {
@@ -32,6 +35,19 @@ await fastify.register(fastifyHelmet, {
             objectSrc: ["'none'"],
             baseUri: ["'self'"],
             frameAncestors: ["'none'"],
+        }
+    },
+    hsts: {
+        maxAge: 31536000, //1 year
+        includeSubDomains: true,
+        preload: true
+    },
+    referrerPolicy: { policy: 'no-referrer' },
+    permissionsPolicy: {
+        features: {
+            geolocation: ['none'],
+            camera: ['none'],
+            microphone: ['none']
         }
     }
 });
