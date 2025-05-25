@@ -9,16 +9,13 @@ Each message is linked to a unique, unguessable URL and is automatically deleted
 ## Features
 
 - 🔐 **End-to-End Encryption**  
-  Messages are encrypted in the browser using strong, client-side cryptography.
+  Messages are encrypted and decrypted in the browser.
 
 - 💥 **Self-Destructing Messages**  
   Messages expire after one view or a preset time limit.
 
 - 🧠 **Zero Knowledge**  
   The server stores only ciphertext. Keys never leave the client.
-
-- 🛡️ **Security Focused**  
-  Strict CSP headers, input validation, and rate limiting are enforced.
 
 ---
 
