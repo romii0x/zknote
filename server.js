@@ -64,7 +64,7 @@ fastify.setNotFoundHandler((request, reply) => {
 //schedule cleanup every 5 minutes
 cron.schedule('*/5 * * * *', async () => {
   try {
-    await deleteExpiredMessages();
+    await deleteExpiredMessages(fastify);
     console.log('🧹 Cleanup job ran at', new Date());
   } catch (err) {
     console.error('Cleanup job failed:', err);
