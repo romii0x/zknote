@@ -1,4 +1,4 @@
-#### [< Back to Repo Page](../README.md)
+#### [< Back to Repo Page](https://github.com/ianshapiro1/shoutbin)
 
 # 🔒 Security
 ShoutBin is designed with a strong focus on privacy, anonymity, and zero-knowledge architecture. Below is a breakdown of its implemented and planned security features.
