@@ -54,13 +54,16 @@ export default async function shoutPlugin(fastify) {
 
         fastify.log.info(`Received message length: ${message.length}, iv length: ${iv.length}`);
 
+        //check iv formatting
         if (typeof iv !== "string" || iv.length < 16 ||iv.length > 24 || !/^[A-Za-z0-9_-]+$/.test(iv)) {
             return reply.status(400).send({ error: "Invalid IV format" });
         }
 
+        //create UUID and set expiration
         const id = uuidToBase64url(randomUUID());
         const expires = Date.now() + 24 * 60 * 60 * 1000;
 
+        //create the database entry
         try {
             await query(
                 `INSERT INTO messages (id, message, iv, expires) VALUES ($1, $2, $3, $4)`,
@@ -88,22 +91,30 @@ export default async function shoutPlugin(fastify) {
     }, async (request, reply) => {
         const { id } = request.params;
 
+        //try to select shout by id
         try {
         const res = await query(
             `SELECT message, iv, expires FROM messages WHERE id = $1`,
             [id]
         );
 
+        //404 if shout is not found
         if (res.rowCount === 0) {
             return reply.code(404).type("text/html").sendFile("404.html");
         }
 
         const msg = res.rows[0];
 
+        //delete and 404 is shout is expired
         if (msg.expires && msg.expires < Date.now()) {
             await query(`DELETE FROM messages WHERE id = $1`, [id]);
+            fastify.log.info(`🗑️ Deleted expired shout: ${id}`);
             return reply.code(410).type("text/html").sendFile("404.html");
         }
+
+        //delete upon access
+        await query(`DELETE FROM messages WHERE id = $1`, [id]);
+        fastify.log.info(`🗑️ Deleted shout after access: ${id}`);
 
         const safeMessage = escapeHtml(msg.message);
         const safeIv = escapeHtml(msg.iv);
