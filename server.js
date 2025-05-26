@@ -61,16 +61,16 @@ await fastify.register(rateLimit, {
 
 
 //register routes and plugins
+fastify.register(shoutPlugin);
+
+fastify.get("/", (req, reply) => {
+    reply.sendFile("app.html");
+});
+
 fastify.register(fastifyStatic, {
     root: path.join(__dirname, "public"),
     prefix: "/",
 });
-
-fastify.get("/", (req, reply) => {
-    reply.sendFile("index.html");
-});
-
-fastify.register(shoutPlugin);
 
 //404 handler
 fastify.setNotFoundHandler((req, reply) => {
