@@ -114,3 +114,10 @@ button:hover {
 .input-with-icon button:hover img {
   opacity: 1;
 }
+
+/* view.html */
+#decrypt-error {
+  font-size: 0.9em;
+  color: red;
+}
+
