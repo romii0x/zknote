@@ -83,18 +83,17 @@ function base64urlToBytes(b64url) {
 async function decryptMessage(passphrase) {
     const status = document.getElementById("status");
     const container = document.getElementById("data");
+    if (!container) {
+        status.textContent = "Missing decryption data.";
+        return;
+    }
     const errorBox = document.getElementById("decrypt-error");
 
     const messageId = container.dataset.id;
     const ciphertext = base64ToBytes(container.dataset.message);
     const iv = base64urlToBytes(container.dataset.iv);
     const saltB64 = container.dataset.salt;
-
-    if (!container) {
-        status.textContent = "Missing decryption data.";
-        return;
-    }
-
+    
     try {
         let key;
 
@@ -138,7 +137,10 @@ async function decryptMessage(passphrase) {
         );
 
         const plaintext = new TextDecoder().decode(plaintextBuffer);
-        status.innerHTML = `<pre>${plaintext}</pre>`;
+        const pre = document.createElement("pre");
+        pre.textContent = plaintext;  // safe, no HTML interpretation
+        status.innerHTML = "";        // clear previous content
+        status.appendChild(pre);
         document.getElementById("content").style.display = "none";
 
         //delete message after decryption
