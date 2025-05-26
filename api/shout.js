@@ -25,7 +25,7 @@ const idPattern = "^[A-Za-z0-9_-]{22}$"; //base64url from 128 bit uuid
 
 //fastify routes
 export default async function shoutPlugin(fastify) {
-    //POST /api/shout
+    //POST /shout
     fastify.post("/api/shout", {
         schema: {
             body: {
@@ -85,13 +85,13 @@ export default async function shoutPlugin(fastify) {
         return { id, url: `/shout/${id}` };
     });
 
-    //GET /shout/:id
+    //GET /shout/:id - serve file
     fastify.get("/shout/:id", {
         schema: {
             params: {
                 type: "object",
                 properties: {
-                id: { type: "string", pattern: idPattern }
+                    id: { type: "string", pattern: idPattern }
                 },
                 required: ["id"]
             }
@@ -99,51 +99,86 @@ export default async function shoutPlugin(fastify) {
     }, async (request, reply) => {
         const { id } = request.params;
 
-        //try to select shout by id
         try {
-        const res = await query(
-            `SELECT message, iv, salt, expires FROM messages WHERE id = $1`,
-            [id]
-        );
+            //request shout data
+            const res = await query(
+                `SELECT message, iv, salt, expires FROM messages WHERE id = $1`,
+                [id]
+            );
 
-        //404 if shout is not found
-        if (res.rowCount === 0) {
-            return reply.code(404).type("text/html").sendFile("404.html");
-        }
+            //404 if shout is not found
+            if (res.rowCount === 0) {
+                return reply.code(404).type("text/html").sendFile("404.html");
+            }
 
-        const msg = res.rows[0];
+            const msg = res.rows[0];
 
-        //delete and 410 is shout is expired
-        if (msg.expires && msg.expires < Date.now()) {
-            await query(`DELETE FROM messages WHERE id = $1`, [id]);
-            fastify.log.info(`🗑️ Deleted expired shout: ${id}`);
-            return reply.code(410).type("text/html").sendFile("404.html");
-        }
+            //delete and 410 is shout is expired
+            if (msg.expires && msg.expires < Date.now()) {
+                await query(`DELETE FROM messages WHERE id = $1`, [id]);
+                fastify.log.info(`🗑️ Deleted expired shout: ${id}`);
+                return reply.code(410).type("text/html").sendFile("404.html");
+            }
 
-        const safeMessage = escapeHtml(msg.message);
-        const safeIv = escapeHtml(msg.iv);
-        const safeId = escapeHtml(id);
-        const safeSalt = msg.salt ? escapeHtml(msg.salt) : "";
-
-        return reply.type("text/html").send(`
-            <noscript><p>This site requires JavaScript to decrypt the message.</p></noscript>
-            <div 
-                id="data" 
-                data-message="${safeMessage}" 
-                data-iv="${safeIv}" 
-                data-id="${safeId}"
-                ${safeSalt ? `data-salt="${safeSalt}"` : ""}
-            ></div>
-            <p id="status">Decrypting...</p>
-            <script type="module" src="/decrypt.js"></script>
-        `);
+            return reply.sendFile("view.html");
         } catch (err) {
-        fastify.log.error(err);
-        return reply.code(500).type("text/html").send("<h2>Server error</h2>");
+            fastify.log.error(err);
+            return reply.code(500).send({ error: "Server error" });
         }
     });
 
-    //DELETE /api/shout/:id
+    //GET /shout/:id/data - return shout data in json
+    fastify.get("/api/shout/:id/data", {
+        schema: {
+            params: {
+                type: "object",
+                properties: {
+                    id: { type: "string", pattern: idPattern }
+                },
+                required: ["id"]
+            }
+        }
+    }, async (request, reply) => {
+        const { id } = request.params;
+
+        try {
+            //request shout data
+            const res = await query(
+                `SELECT message, iv, salt, expires FROM messages WHERE id = $1`,
+                [id]
+            );
+
+            //404 if shout is not found
+            if (res.rowCount === 0) {
+                return reply.code(404).type("text/html").sendFile("404.html");
+            }
+
+            const msg = res.rows[0];
+
+            //delete and 410 is shout is expired
+            if (msg.expires && msg.expires < Date.now()) {
+                await query(`DELETE FROM messages WHERE id = $1`, [id]);
+                fastify.log.info(`🗑️ Deleted expired shout: ${id}`);
+                return reply.code(410).type("text/html").sendFile("404.html");
+            }
+
+            const safeMessage = escapeHtml(msg.message);
+            const safeIv = escapeHtml(msg.iv);
+            const safeId = escapeHtml(id);
+            const safeSalt = msg.salt ? escapeHtml(msg.salt) : "";
+            return {
+                message: safeMessage,
+                iv: safeIv,
+                id: safeId,
+                salt: safeSalt || ""
+            };
+        } catch (err) {
+            fastify.log.error(err);
+            return reply.code(500).send({ error: "Server error" });
+        }
+    });
+
+    //DELETE /shout/:id
     fastify.delete("/api/shout/:id", {
         schema: {
         params: {
