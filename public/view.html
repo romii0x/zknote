@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ShoutBin</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <main id="content">
+    <div id="passphrase-wrapper" class="passphrase-wrapper">
+      <label for="passphrase">Enter passphrase:</label>
+      <div class="input-with-icon">
+        <input type="password" id="passphrase" maxlength="128" autocomplete="off"/>
+        <button type="button" id="toggle-pass" aria-label="Toggle password visibility">
+          <img id="eye-icon" src="/glyphs/invisible.png" alt="Show" width="20" height="20" />
+        </button>
+      </div>
+      <div id="decrypt-error"></div>
+      <button id="decrypt-btn">Decrypt Message</button>
+    </div>
+  </main>
+  <div id="status"></div>
+  <script src="/js/view.js"></script>
+</body>
+</html>
