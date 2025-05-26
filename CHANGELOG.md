@@ -29,11 +29,22 @@
 - separated README into multiple documentation files and created changelog
 - added optional passphrase for encryption
 
+**2025-05-26**
+- added static view page for message viewing
+- reworked encryption/ecryption logic to work with served file
+    - reimplemented delete upon decryption after security review
+    - server now returns json for /shout/:id/data endpoint intead of embedded script
+- ui improvements, glyphs for visible/invisible passphrases
+- added folders for js and css files
+- minor security fixes
+    - strict use of dom building with textContent
+    - visibility toggle glyphs for passphrases
 
 ## TODO:
-
-### Security
-- create migration for messages:
+- move to a feature branching system and add a contribution guide
+- rework expiration time logic; currently hardcoded to 24hrs
+- look at cron job implementation for issues; sometimes getting missed executions
+- create migration for messages schema:
 ```
 CREATE TABLE messages (
   id VARCHAR(32) PRIMARY KEY,
@@ -43,11 +54,4 @@ CREATE TABLE messages (
   salt TEXT
 );
 ```
-- HSTS headers
-
-### Site
-- changing expiration time (could be a slider from *when accessed* to *7 days*)
-- ui improvements
-
-### Future
-- anonymous usage analytics (maybe)
+- containerize the app
