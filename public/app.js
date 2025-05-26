@@ -3,8 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const textarea = document.getElementById("message");
     const result = document.getElementById("result");
     const charCount = document.getElementById("char-count");
-    
-    
+
     //check webcrypto support
     if (window.crypto?.subtle) {
         sendBtn.disabled = false;
@@ -14,9 +13,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     //character limit
     textarea.addEventListener("input", () => {
-    charCount.textContent = `${textarea.value.length} / 5000`;
+        charCount.textContent = `${textarea.value.length} / 5000`;
     });
 
+    //toggle passphrase view
+    document.getElementById("toggle-pass").addEventListener("click", () => {
+        const passInput = document.getElementById("passphrase");
+        const eyeIcon = document.getElementById("eye-icon");
+
+        const isHidden = passInput.type === "password";
+        passInput.type = isHidden ? "text" : "password";
+        eyeIcon.src = isHidden ? "glyphs/visible.png" : "glyphs/invisible.png";
+        eyeIcon.alt = isHidden ? "Hide" : "Show";
+    });
+    
     //click handler
     document.getElementById("send").addEventListener("click", async () => {
         const message = textarea.value;
