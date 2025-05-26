@@ -16,7 +16,14 @@ document.addEventListener("DOMContentLoaded", () => {
         charCount.textContent = `${textarea.value.length} / 5000`;
     });
 
-    //toggle passphrase view
+    //passphrase validation and glpyh handler
+    const passphrase = document.getElementById('passphrase').value.trim();
+
+    if (passphrase.length > 128) {
+        alert('Passphrase must be 128 characters or less.');
+        return;
+    }
+
     document.getElementById("toggle-pass").addEventListener("click", () => {
         const passInput = document.getElementById("passphrase");
         const eyeIcon = document.getElementById("eye-icon");
@@ -26,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
         eyeIcon.src = isHidden ? "glyphs/visible.png" : "glyphs/invisible.png";
         eyeIcon.alt = isHidden ? "Hide" : "Show";
     });
-    
+
     //click handler
     document.getElementById("send").addEventListener("click", async () => {
         const message = textarea.value;

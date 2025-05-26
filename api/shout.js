@@ -113,7 +113,7 @@ export default async function shoutPlugin(fastify) {
 
         const msg = res.rows[0];
 
-        //delete and 404 is shout is expired
+        //delete and 410 is shout is expired
         if (msg.expires && msg.expires < Date.now()) {
             await query(`DELETE FROM messages WHERE id = $1`, [id]);
             fastify.log.info(`🗑️ Deleted expired shout: ${id}`);
