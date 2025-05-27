@@ -41,6 +41,7 @@
     - visibility toggle glyphs for passphrases
 
 ## TODO:
+- fix text ui from cutting off at top of page
 - move to a feature branching system and add a contribution guide
 - rework expiration time logic; currently hardcoded to 24hrs
 - look at cron job implementation for issues; sometimes getting missed executions
