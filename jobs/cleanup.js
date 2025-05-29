@@ -1,6 +1,7 @@
 import { query } from "../db.js";
 
 const LOCK_TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
+const CLEANUP_TIMEOUT = 2 * 60 * 1000; // 2 minutes in milliseconds
 
 async function acquireCleanupLock(client) {
     // Try to acquire a lock using Postgres advisory locks
@@ -27,25 +28,38 @@ export async function deleteExpiredMessages(fastify) {
     // Get a dedicated client from the pool
     const client = await fastify.pg.pool.connect();
     
+    // Setup cleanup timeout
+    const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => {
+            reject(new Error('Cleanup operation timed out'));
+        }, CLEANUP_TIMEOUT);
+    });
+    
     try {
         // Try to acquire the lock
         const lockAcquired = await acquireCleanupLock(client);
         if (!lockAcquired) {
             fastify.log.info("Cleanup already running in another instance");
-            return;
+            return metrics;
         }
 
         // Begin transaction
         await client.query('BEGIN');
 
-        // Delete expired messages
-        const res = await client.query(
+        // Set statement timeout to prevent long-running queries
+        await client.query('SET statement_timeout = $1', [CLEANUP_TIMEOUT]);
+
+        // Delete expired messages with timeout
+        const deletePromise = client.query(
             `DELETE FROM messages 
              WHERE expires IS NOT NULL 
              AND expires < $1
              RETURNING id`,
             [Date.now()]
         );
+
+        // Wait for deletion with timeout
+        const res = await Promise.race([deletePromise, timeoutPromise]);
 
         // Commit transaction
         await client.query('COMMIT');
@@ -62,7 +76,9 @@ export async function deleteExpiredMessages(fastify) {
         }
     } catch (err) {
         // Rollback transaction on error
-        await client.query('ROLLBACK');
+        await client.query('ROLLBACK').catch(rollbackErr => {
+            fastify.log.error('Failed to rollback transaction:', rollbackErr);
+        });
         
         metrics.error = err.message;
         fastify.log.error({
@@ -74,13 +90,20 @@ export async function deleteExpiredMessages(fastify) {
         // Re-throw error for the cron job to handle
         throw err;
     } finally {
+        // Reset statement timeout
+        await client.query('RESET statement_timeout').catch(resetErr => {
+            fastify.log.error('Failed to reset statement timeout:', resetErr);
+        });
+        
         // Always release the lock and client
         try {
             await releaseCleanupLock(client);
         } catch (unlockErr) {
             fastify.log.error("Failed to release cleanup lock:", unlockErr);
         }
-        client.release();
+        
+        // Always release the client
+        await client.release();
     }
 
     return metrics;
