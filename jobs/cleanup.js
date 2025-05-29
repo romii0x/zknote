@@ -46,8 +46,8 @@ export async function deleteExpiredMessages(fastify) {
         // Begin transaction
         await client.query('BEGIN');
 
-        // Set statement timeout to prevent long-running queries
-        await client.query('SET statement_timeout = $1', [CLEANUP_TIMEOUT]);
+        // Set statement timeout to prevent long-running queries (in milliseconds)
+        await client.query("SET statement_timeout TO '" + CLEANUP_TIMEOUT + "'");
 
         // Delete expired messages with timeout
         const deletePromise = client.query(

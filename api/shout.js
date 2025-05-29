@@ -168,7 +168,7 @@ export default async function shoutPlugin(fastify) {
 
             const msg = res.rows[0];
 
-            //delete and 410 if shout is expired
+            //410 if shout is expired
             if (msg.expires && msg.expires < Date.now()) {
                 await deleteMessage(fastify, id);
                 return reply.code(410).type("text/html").sendFile("404.html");
@@ -176,7 +176,7 @@ export default async function shoutPlugin(fastify) {
 
             return reply.sendFile("view.html");
         } catch (err) {
-            fastify.log.error({ err, id }, "Failed to retrieve message");
+            fastify.log.error(err, "Failed to serve message");
             return reply.code(500).send(
                 errorResponse(500, "Server error")
             );
@@ -200,9 +200,9 @@ export default async function shoutPlugin(fastify) {
                 200: {
                     type: "object",
                     properties: {
+                        id: { type: "string" },
                         message: { type: "string" },
                         iv: { type: "string" },
-                        id: { type: "string" },
                         salt: { type: "string" }
                     }
                 }
@@ -212,50 +212,28 @@ export default async function shoutPlugin(fastify) {
         const { id } = request.params;
 
         try {
-            //request shout data with FOR UPDATE lock
             const res = await query(
-                `SELECT message, iv, salt, expires 
-                 FROM messages 
-                 WHERE id = $1 
-                 FOR UPDATE`,
-                [id]
+                `SELECT message, iv, salt FROM messages WHERE id = $1 AND (expires IS NULL OR expires > $2)`,
+                [id, Date.now()]
             );
 
-            //404 if shout is not found
             if (res.rowCount === 0) {
                 return reply.code(404).send(
-                    errorResponse(404, "Message not found")
+                    errorResponse(404, "Message not found or expired")
                 );
             }
 
             const msg = res.rows[0];
-
-            //delete and 410 if shout is expired
-            if (msg.expires && msg.expires < Date.now()) {
-                await deleteMessage(fastify, id);
-                return reply.code(410).send(
-                    errorResponse(410, "Message expired")
-                );
-            }
-
-            // Delete after reading if not already deleted
-            await deleteMessage(fastify, id);
-
-            return {
-                message: escapeHtml(msg.message),
-                iv: escapeHtml(msg.iv),
-                id: escapeHtml(id),
-                salt: msg.salt ? escapeHtml(msg.salt) : ""
-            };
+            return { id, ...msg };
         } catch (err) {
-            fastify.log.error({ err, id }, "Failed to retrieve message data");
+            fastify.log.error(err, "Failed to get message data");
             return reply.code(500).send(
-                errorResponse(500, "Server error")
+                errorResponse(500, "Failed to get message data")
             );
         }
     });
 
-    //DELETE /shout/:id
+    // DELETE /shout/:id - delete a message after successful decryption
     fastify.delete("/api/shout/:id", {
         config: {
             rateLimit: readRateLimit
@@ -273,16 +251,16 @@ export default async function shoutPlugin(fastify) {
         const { id } = request.params;
 
         try {
-            const deleted = await deleteMessage(fastify, id);
-            if (!deleted) {
-                return reply.status(500).send(
+            const success = await deleteMessage(fastify, id);
+            if (!success) {
+                return reply.code(500).send(
                     errorResponse(500, "Failed to delete message")
                 );
             }
-            return reply.status(204).send();
+            return { success: true };
         } catch (err) {
-            fastify.log.error({ err, id }, "Failed to delete message");
-            return reply.status(500).send(
+            fastify.log.error(err, "Failed to delete message");
+            return reply.code(500).send(
                 errorResponse(500, "Failed to delete message")
             );
         }
