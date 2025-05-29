@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import fastifyStatic from "@fastify/static";
 import rateLimit from "@fastify/rate-limit";
 import fastifyHelmet from "@fastify/helmet";
+import fastifyCors from "@fastify/cors";
 
 import path from "path";
 import { fileURLToPath } from "url";
@@ -10,7 +11,7 @@ import cron from 'node-cron';
 
 import shoutPlugin from "./api/shout.js";
 import { deleteExpiredMessages } from './jobs/cleanup.js';
-import { setupDatabase } from './db.js';
+import { setupDatabase } from './db/db.js';
 
 dotenv.config();
 
@@ -33,10 +34,10 @@ const fastify = Fastify({
     trustProxy: true
 });
 
-// Make fastify instance globally available for legacy code
+//make fastify instance globally available for legacy code
 global.fastify = fastify;
 
-// Setup database first
+//setup database first
 await setupDatabase(fastify);
 
 //CSP
@@ -44,40 +45,101 @@ await fastify.register(fastifyHelmet, {
     contentSecurityPolicy: {
         useDefaults: true,
         directives: {
-            defaultSrc: ["'self'"],
+            defaultSrc: ["'none'"],
             scriptSrc: ["'self'"],
             styleSrc: ["'self'"],
             imgSrc: ["'self'", "data:"],
+            connectSrc: ["'self'"],
+            fontSrc: ["'self'"],
             objectSrc: ["'none'"],
-            baseUri: ["'self'"],
+            mediaSrc: ["'none'"],
+            baseUri: ["'none'"],
             frameAncestors: ["'none'"],
+            formAction: ["'self'"],
+            manifestSrc: ["'self'"]
         }
     },
+    crossOriginEmbedderPolicy: true,
+    crossOriginOpenerPolicy: { policy: "same-origin" },
+    crossOriginResourcePolicy: { policy: "same-origin" },
     hsts: {
-        maxAge: 31536000, //1 year
+        maxAge: 31536000,
         includeSubDomains: true,
         preload: true
     },
+    noSniff: true,
     referrerPolicy: { policy: 'no-referrer' },
+    xssFilter: true,
     permissionsPolicy: {
         features: {
-            geolocation: ['none'],
+            accelerometer: ['none'],
+            ambientLightSensor: ['none'],
+            autoplay: ['none'],
+            battery: ['none'],
             camera: ['none'],
-            microphone: ['none']
+            displayCapture: ['none'],
+            document: ['none'],
+            executionWhileOutOfViewport: ['none'],
+            fullscreen: ['none'],
+            geolocation: ['none'],
+            gyroscope: ['none'],
+            magnetometer: ['none'],
+            microphone: ['none'],
+            midi: ['none'],
+            payment: ['none'],
+            pictureInPicture: ['none'],
+            usb: ['none'],
+            wakeLock: ['none'],
+            xr: ['none']
         }
     }
 });
 
-//rate limiting (basic logic for now)
-await fastify.register(rateLimit, {
-    max: 100,
-    timeWindow: "1 minute",
-    ban: 1,
+//add CORS configuration
+await fastify.register(fastifyCors, {
+    origin: false, //disable CORS by default
+    methods: ['GET', 'POST', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'x-delete-token'],
+    credentials: false,
+    maxAge: 86400, // 24 hours
+    exposedHeaders: [], //no headers exposed to clients
+    preflight: false //disable preflight caching
 });
 
+//improved rate limiting 
+await fastify.register(rateLimit, {
+    global: true,
+    max: 100,
+    timeWindow: "1 minute",
+    allowList: ['127.0.0.1'],
+    ban: 3,
+    banTimeMs: 60 * 60 * 1000, //1 hour ban
+    keyGenerator: (req) => {
+        return req.headers['x-forwarded-for'] || req.ip;
+    },
+    skipOnError: false,
+    addHeaders: {
+        remaining: true,
+        reset: true,
+        total: true
+    }
+});
 
 //register routes and plugins
 fastify.register(shoutPlugin);
+
+//HTTPS redirect (if enabled)
+if (process.env.FORCE_HTTPS === 'true') {
+    fastify.addHook('onRequest', (request, reply, done) => {
+        const isInsecure = request.headers['x-forwarded-proto'] !== 'https' && 
+                          request.protocol !== 'https';
+        if (isInsecure) {
+            reply.redirect(301, `https://${request.hostname}${request.url}`);
+            return;
+        }
+        done();
+    });
+}
 
 fastify.get("/", (req, reply) => {
     reply.sendFile("app.html");
