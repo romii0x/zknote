@@ -46,18 +46,16 @@
     - fixed cleanup job timeout issues
     - improved error messages and user feedback
     - fixed message centering issues
+- enhanced security measures
+    - batched cleanup with advisory locks
+    - proper resource cleanup and metrics
+    - replaced innerHTML with safe DOM manipulation
+    - improved CSP configuration
+    - IP allowlisting for trusted clients
+    - implemented constant-time responses
+    - added proper error handling for cleanup jobs
 
 ## TODO:
 - move to a feature branching system and add a contribution guide
 - rework expiration time logic; currently hardcoded to 24hrs
-- create migration for messages schema:
-```
-CREATE TABLE messages (
-  id VARCHAR(32) PRIMARY KEY,
-  message TEXT NOT NULL,
-  expires BIGINT NOT NULL,
-  iv VARCHAR(32),
-  salt TEXT
-);
-```
 - containerize the app
