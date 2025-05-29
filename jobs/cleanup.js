@@ -1,10 +1,7 @@
-import { query } from "../db.js";
-
-const LOCK_TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
-const CLEANUP_TIMEOUT = 2 * 60 * 1000; // 2 minutes in milliseconds
+const CLEANUP_TIMEOUT = 2 * 60 * 1000; //2 minutes
 
 async function acquireCleanupLock(client) {
-    // Try to acquire a lock using Postgres advisory locks
+    //try to acquire a lock using Postgres advisory locks
     const lockResult = await client.query(
         "SELECT pg_try_advisory_lock(hashtext('cleanup_job')) as acquired"
     );
@@ -12,98 +9,73 @@ async function acquireCleanupLock(client) {
 }
 
 async function releaseCleanupLock(client) {
-    await client.query(
-        "SELECT pg_advisory_unlock(hashtext('cleanup_job'))"
-    );
+    try {
+        await client.query(
+            "SELECT pg_advisory_unlock(hashtext('cleanup_job'))"
+        );
+        return true;
+    } catch (err) {
+        fastify.log.error('Failed to release cleanup lock:', err);
+        return false;
+    }
 }
 
 export async function deleteExpiredMessages(fastify) {
     const metrics = {
-        startTime: Date.now(),
-        deletedCount: 0,
         success: false,
-        error: null
+        deletedCount: 0,
+        errors: []
     };
 
-    // Get a dedicated client from the pool
-    const client = await fastify.pg.pool.connect();
-    
-    // Setup cleanup timeout
-    const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => {
-            reject(new Error('Cleanup operation timed out'));
-        }, CLEANUP_TIMEOUT);
-    });
-    
+    const client = await fastify.pg.connect();
     try {
-        // Try to acquire the lock
         const lockAcquired = await acquireCleanupLock(client);
         if (!lockAcquired) {
-            fastify.log.info("Cleanup already running in another instance");
+            metrics.errors.push('Failed to acquire cleanup lock - another job is running');
             return metrics;
         }
 
-        // Begin transaction
-        await client.query('BEGIN');
+        //set statement timeout to prevent long-running queries
+        await client.query(`SET statement_timeout = ${CLEANUP_TIMEOUT}`);
 
-        // Set statement timeout to prevent long-running queries (in milliseconds)
-        await client.query("SET statement_timeout TO '" + CLEANUP_TIMEOUT + "'");
-
-        // Delete expired messages with timeout
-        const deletePromise = client.query(
-            `DELETE FROM messages 
-             WHERE expires IS NOT NULL 
-             AND expires < $1
-             RETURNING id`,
-            [Date.now()]
-        );
-
-        // Wait for deletion with timeout
-        const res = await Promise.race([deletePromise, timeoutPromise]);
-
-        // Commit transaction
-        await client.query('COMMIT');
-
-        metrics.deletedCount = res.rowCount;
-        metrics.success = true;
-
-        if (res.rowCount > 0) {
-            fastify.log.info({
-                msg: `Deleted ${res.rowCount} expired shouts`,
-                duration: Date.now() - metrics.startTime,
-                ...metrics
-            });
+        //delete expired messages in batches
+        let totalDeleted = 0;
+        while (true) {
+            const result = await client.query(
+                `WITH deleted AS (
+                    DELETE FROM messages 
+                    WHERE expires < $1 
+                    LIMIT 1000
+                    RETURNING id
+                )
+                SELECT COUNT(*) as count FROM deleted`,
+                [Date.now()]
+            );
+            
+            const deletedCount = parseInt(result.rows[0].count);
+            totalDeleted += deletedCount;
+            
+            if (deletedCount < 1000) break; //no more to delete
         }
-    } catch (err) {
-        // Rollback transaction on error
-        await client.query('ROLLBACK').catch(rollbackErr => {
-            fastify.log.error('Failed to rollback transaction:', rollbackErr);
-        });
-        
-        metrics.error = err.message;
-        fastify.log.error({
-            msg: "Cleanup job failed",
-            error: err,
-            ...metrics
-        });
 
-        // Re-throw error for the cron job to handle
-        throw err;
+        metrics.success = true;
+        metrics.deletedCount = totalDeleted;
+
+        if (totalDeleted > 0) {
+            fastify.log.info(`Cleanup job deleted ${totalDeleted} expired messages`);
+        }
+
+    } catch (err) {
+        metrics.errors.push(`Cleanup failed: ${err.message}`);
+        fastify.log.error('Cleanup job error:', err);
     } finally {
-        // Reset statement timeout
-        await client.query('RESET statement_timeout').catch(resetErr => {
-            fastify.log.error('Failed to reset statement timeout:', resetErr);
-        });
-        
-        // Always release the lock and client
         try {
             await releaseCleanupLock(client);
-        } catch (unlockErr) {
-            fastify.log.error("Failed to release cleanup lock:", unlockErr);
+            client.release();
+        } catch (err) {
+            metrics.errors.push(`Failed to cleanup resources: ${err.message}`);
+            fastify.log.error('Failed to cleanup resources:', err);
         }
-        
-        // Always release the client
-        await client.release();
     }
 
     return metrics;
