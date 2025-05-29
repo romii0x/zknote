@@ -40,11 +40,16 @@
     - strict use of dom building with textContent
     - visibility toggle glyphs for passphrases
 
+**2025-05-29**
+- improved user experience and reliability
+    - added animated copy feedback with check.gif
+    - fixed cleanup job timeout issues
+    - improved error messages and user feedback
+    - fixed message centering issues
+
 ## TODO:
-- fix text ui from cutting off at top of page
 - move to a feature branching system and add a contribution guide
 - rework expiration time logic; currently hardcoded to 24hrs
-- look at cron job implementation for issues; sometimes getting missed executions
 - create migration for messages schema:
 ```
 CREATE TABLE messages (

@@ -2,7 +2,7 @@
 
 **ShoutBin** is a zero-knowledge, self-destructing pastebin for encrypted messages.  
 All encryption and decryption occurs on the client side, ensuring the server never sees plaintext data.  
-Each message is linked to a unique, unguessable URL and is automatically deleted after expiration or access.
+Each message is linked to a unique, unguessable URL and is automatically deleted after successful decryption or expiration.
 
 ## Features
 
@@ -10,7 +10,7 @@ Each message is linked to a unique, unguessable URL and is automatically deleted
   Messages are encrypted and decrypted in the browser.
 
 - 💥 **Self-Destructing Messages**  
-  Messages expire after one view or a preset time limit.
+  Messages are deleted after successful decryption or expiration.
 
 - 🧠 **Zero Knowledge**  
   The server stores only ciphertext. Keys never leave the client.

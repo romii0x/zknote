@@ -45,11 +45,11 @@ Disallows all inline scripts and object embeds.
 Prevents clickjacking via frame-ancestors 'none'.
 
 ### ✅ Rate Limiting & Abuse Protection
-Basic rate limiting in place using @fastify/rate-limit with plans to improve.
+Endpoint-specific rate limiting using @fastify/rate-limit:
 
-100 requests per minute per IP.
-
-Offending clients can be temporarily banned.
+- Message creation: 10 requests per minute
+- Message reading: 30 requests per minute
+- Automatic IP banning for repeated violations
 
 ### ✅ Optional Passphrase-Based Encryption
 Allows users to set a custom password to derive the encryption key.
@@ -66,12 +66,14 @@ Each message will include a random delete token.
 
 This helps prevent malicious users from guessing or deleting messages.
 
-### Timing Attack Mitigation
+### 🔧 Timing Attack Mitigation
 Avoid revealing whether a message ID exists or has expired until decryption succeeds.
 Avoid telling the client why decryption failed.
 
-### 🔧 Rate Limitng Improvements
-Rate limiting should be applied per endpoint and utilize exponential backoff or temp banning.
+### 🔧 Rate Limiting Improvements
+- Add exponential backoff for repeated violations
+- Implement IP allowlisting for trusted clients
+- Add request logging for abuse detection
 
 ### 🔧 Misc Security Enhancements
 - Plan for security audits or penetration testing to identify vulnerabilities.
