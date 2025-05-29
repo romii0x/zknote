@@ -137,17 +137,59 @@ async function decryptMessage(passphrase) {
         );
 
         const plaintext = new TextDecoder().decode(plaintextBuffer);
-        const pre = document.createElement("pre");
-        pre.textContent = plaintext;  // safe, no HTML interpretation
-        status.innerHTML = "";        // clear previous content
-        status.appendChild(pre);
-        document.getElementById("content").style.display = "none";
+        
+        // Delete the message after successful decryption
+        try {
+            const deleteResponse = await fetch(`/api/shout/${messageId}`, {
+                method: 'DELETE'
+            });
+            if (!deleteResponse.ok) {
+                console.error('Failed to delete message:', await deleteResponse.text());
+            }
+        } catch (deleteErr) {
+            console.error('Error deleting message:', deleteErr);
+        }
 
-        //delete message after decryption
-        await fetch('/api/shout/' + messageId, { method: 'DELETE' });
+        // Create message container with copy button
+        status.innerHTML = `
+            <div class="message-container">
+                <div class="message-actions">
+                    <button id="copy-btn" class="icon-button" aria-label="Copy message">
+                        <img src="/glyphs/copy.png" alt="" width="20" height="20">
+                    </button>
+                </div>
+                <pre class="message-content">${escapeHtml(plaintext)}</pre>
+                <p class="warning">This message has been deleted from the server and cannot be accessed again</p>
+            </div>
+        `;
+
+        // Add copy button functionality
+        document.getElementById("copy-btn").addEventListener("click", () => {
+            navigator.clipboard.writeText(plaintext).then(() => {
+                const btn = document.getElementById("copy-btn");
+                const img = btn.querySelector("img");
+                img.src = "/glyphs/check.gif";
+                setTimeout(() => {
+                    img.src = "/glyphs/copy.png";
+                }, 1000);
+            });
+        });
+
+        // Hide the decrypt form since we're done with it
+        document.getElementById("content").style.display = "none";
 
     } catch (err) {
         console.error(err);
-        errorBox.textContent = "Failed to decrypt message. Wrong key or passphrase?";
+        errorBox.textContent = "Failed to decrypt message. Please check your passphrase and try again.";
     }
+}
+
+// Helper function to escape HTML
+function escapeHtml(str) {
+    return str
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
 }

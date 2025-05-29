@@ -2,26 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="X-Frame-Options" content="DENY" />
+  <meta name="referrer" content="no-referrer" />
   <title>ShoutBin - Self-Destructing Messages</title>
   <link rel="stylesheet" href="/css/styles.css" />
+  <link rel="icon" href="data:," />
 </head>
 <body>
   <main>
     <h1>ShoutBin</h1>
     <p class="tagline">Send encrypted, self-destructing messages</p>
-    <textarea id="message" placeholder="Write your secret message..." maxlength="5000"></textarea>
-    <div id="char-count">0 / 5000</div>
+    <textarea id="message" placeholder="Write your secret message..." maxlength="5000" spellcheck="false"></textarea>
+    <div id="char-count" aria-live="polite">0 / 5000</div>
     <div class="passphrase-wrapper">
       <div class="input-with-icon">
-        <input type="password" id="passphrase" maxlength="128" autocomplete="off" placeholder="Leave blank for auto-generated key" />
+        <input type="password" id="passphrase" maxlength="128" autocomplete="new-password" placeholder="Leave blank for auto-generated key" />
         <button type="button" id="toggle-pass" aria-label="Toggle password visibility">
-          <img id="eye-icon" src="/glyphs/invisible.png" alt="Show" width="20" height="20" />
+          <img id="eye-icon" src="/glyphs/invisible.png" alt="" width="20" height="20" />
         </button>
       </div>
     </div>
     <button id="send" disabled>Send Shout</button>
-    <div id="result"></div> 
+    <div id="result" role="status" aria-live="polite"></div> 
   </main>
-  <script src="/js/app.js"></script>
+  <script src="/js/app.js" defer></script>
 </body>
 </html>

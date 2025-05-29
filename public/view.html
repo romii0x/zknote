@@ -2,24 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ShoutBin</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+  <meta http-equiv="X-Frame-Options" content="DENY" />
+  <meta name="referrer" content="no-referrer" />
+  <title>ShoutBin - View Message</title>
   <link rel="stylesheet" href="/css/styles.css" />
+  <link rel="icon" href="data:," />
 </head>
 <body>
   <main id="content">
     <div id="passphrase-wrapper" class="passphrase-wrapper">
       <label for="passphrase">Enter passphrase:</label>
       <div class="input-with-icon">
-        <input type="password" id="passphrase" maxlength="128" autocomplete="off"/>
+        <input type="password" id="passphrase" maxlength="128" autocomplete="new-password" aria-label="Decryption passphrase"/>
         <button type="button" id="toggle-pass" aria-label="Toggle password visibility">
-          <img id="eye-icon" src="/glyphs/invisible.png" alt="Show" width="20" height="20" />
+          <img id="eye-icon" src="/glyphs/invisible.png" alt="" width="20" height="20" />
         </button>
       </div>
-      <div id="decrypt-error"></div>
+      <div id="decrypt-error" role="alert"></div>
       <button id="decrypt-btn">Decrypt Message</button>
     </div>
   </main>
-  <div id="status"></div>
-  <script src="/js/view.js"></script>
+  <div id="status" class="message-view" role="status" aria-live="polite"></div>
+  <script src="/js/view.js" defer></script>
 </body>
 </html>
