@@ -71,11 +71,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const data = await response.json();
 
+            //clear previous result
+            while (result.firstChild) {
+                result.firstChild.remove();
+            }
+
             if (passphrase) {
-                result.innerHTML = `🔐 Message sent. Share this link and passphrase separately:<br><a href="${location.origin}${data.url}" target="_blank">${location.origin}${data.url}</a>`;
+                const text = document.createTextNode("🔐 Message sent. Share this link and passphrase separately: ");
+                result.appendChild(text);
+                result.appendChild(document.createElement("br"));
+                
+                const link = document.createElement("a");
+                link.href = `${location.origin}${data.url}`;
+                link.target = "_blank";
+                link.textContent = `${location.origin}${data.url}`;
+                result.appendChild(link);
             } else {
                 const fullUrl = `${location.origin}${data.url}#k=${encodeURIComponent(key)}`;
-                result.innerHTML = `🔗 Your secret link: <a href="${fullUrl}" target="_blank">${fullUrl}</a>`;
+                const text = document.createTextNode("🔗 Your secret link: ");
+                result.appendChild(text);
+                
+                const link = document.createElement("a");
+                link.href = fullUrl;
+                link.target = "_blank";
+                link.textContent = fullUrl;
+                result.appendChild(link);
             }
 
         } catch (err) {

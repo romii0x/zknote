@@ -1,6 +1,29 @@
-document.addEventListener("DOMContentLoaded", async () => {
+// Initial visibility check
+const content = document.getElementById("content");
+const status = document.getElementById("status");
+const MAX_KEY_LENGTH = 512; // Maximum length for URL key parameter
+
+// Hide content until we verify message exists
+content.style.display = 'none';
+status.style.display = 'none';
+
+// Check if message exists before showing anything
+(async () => {
     const id = location.pathname.split("/").pop();
-    const status = document.getElementById("status");
+    try {
+        const res = await fetch(`/api/shout/${id}/data`);
+        if (!res.ok) {
+            location.replace('/404.html');
+            return;
+        }
+        initializeView(await res.json());
+    } catch {
+        location.replace('/404.html');
+    }
+})();
+
+//main view
+async function initializeView(data) {
     const errorBox = document.getElementById("decrypt-error");
 
     //passphrase glyph handler
@@ -13,60 +36,51 @@ document.addEventListener("DOMContentLoaded", async () => {
         eyeIcon.alt = isHidden ? "Hide" : "Show";
     });
 
-    try {
-        //request shout data from server
-        const res = await fetch(`/api/shout/${id}/data`);
-        if (!res.ok) {
-            status.textContent = "Message not found or expired.";
-        return;
+    //inject shout data into view.html
+    const container = document.createElement("div");
+    container.id = "data";
+    container.dataset.message = data.message;
+    container.dataset.iv = data.iv;
+    container.dataset.salt = data.salt;
+    container.dataset.deleteToken = data.deleteToken;
+    container.dataset.messageId = data.id;
+    document.body.appendChild(container);
+
+    const hasSalt = Boolean(data.salt);
+    const hash = location.hash.slice(1);
+    const keyParam = new URLSearchParams(hash).get("k");
+
+    //show content and status now that we have data
+    content.style.display = 'block';
+    status.style.display = 'block';
+
+    if (!hasSalt && keyParam) {
+        //validate keyParam
+        if (!/^[A-Za-z0-9\-_]+$/.test(keyParam || "") || keyParam.length > MAX_KEY_LENGTH) {
+            errorBox.textContent = "Invalid key format or length.";
+            return;
         }
-        const data = await res.json();
-
-        //inject shout data into view.html
-        const container = document.createElement("div");
-        container.id = "data";
-        container.dataset.id = data.id;
-        container.dataset.message = data.message;
-        container.dataset.iv = data.iv;
-        container.dataset.salt = data.salt;
-        document.body.appendChild(container);
-
-        const hasSalt = Boolean(data.salt);
-        const hash = location.hash.slice(1);
-        const keyParam = new URLSearchParams(hash).get("k");
-
-        if (!hasSalt && keyParam) {
-            //validate keyParam
-            if (!/^[A-Za-z0-9\-_]+$/.test(keyParam || "")) {
-                errorBox.textContent = "Invalid key format.";
+        document.getElementById("content").style.display = "none";
+        decryptMessage(null); //no passphrase, decrypt immediately
+    } else if (hasSalt) {
+        //passphrase required
+        document.getElementById("decrypt-btn").addEventListener("click", () => {
+            const passphrase = document.getElementById("passphrase").value.trim();
+            if (!passphrase) {
+                errorBox.textContent = "Please enter a passphrase.";
                 return;
             }
-            document.getElementById("content").style.display = "none";
-            decryptMessage(null); //no passphrase, decrypt immediately
-        } else if (hasSalt) {
-            //passphrase required
-            document.getElementById("decrypt-btn").addEventListener("click", () => {
-                const passphrase = document.getElementById("passphrase").value.trim();
-                if (!passphrase) {
-                    errorBox.textContent = "Please enter a passphrase.";
-                    return;
-                }
-                if (passphrase.length > 128) {
-                    errorBox.textContent = "Passphrase must be less than 128 characters.";
-                    return;
-                }
-                errorBox.textContent = "";
-                decryptMessage(passphrase);
-            });
-        } else {
-            errorBox.textContent = "No decryption key or passphrase found.";
-        }
-    } catch (err) {
-        console.error(err);
-        status.textContent = err.message;
+            if (passphrase.length > 128) {
+                errorBox.textContent = "Passphrase must be less than 128 characters.";
+                return;
+            }
+            errorBox.textContent = "";
+            decryptMessage(passphrase);
+        });
+    } else {
+        errorBox.textContent = "No decryption key or passphrase found.";
     }
-});
-    
+}
 
 //conversion helpers
 function base64ToBytes(b64) {
@@ -89,10 +103,11 @@ async function decryptMessage(passphrase) {
     }
     const errorBox = document.getElementById("decrypt-error");
 
-    const messageId = container.dataset.id;
+    const messageId = container.dataset.messageId;
     const ciphertext = base64ToBytes(container.dataset.message);
     const iv = base64urlToBytes(container.dataset.iv);
     const saltB64 = container.dataset.salt;
+    const deleteToken = container.dataset.deleteToken;
     
     try {
         let key;
@@ -138,58 +153,84 @@ async function decryptMessage(passphrase) {
 
         const plaintext = new TextDecoder().decode(plaintextBuffer);
         
-        // Delete the message after successful decryption
+        //delete the message after successful decryption
         try {
             const deleteResponse = await fetch(`/api/shout/${messageId}`, {
-                method: 'DELETE'
+                method: 'DELETE',
+                headers: {
+                    'x-delete-token': deleteToken
+                }
             });
             if (!deleteResponse.ok) {
-                console.error('Failed to delete message:', await deleteResponse.text());
+                const errorText = await deleteResponse.text();
+                console.error('Failed to delete message:', errorText);
+                throw new Error('Failed to delete message: ' + errorText);
             }
         } catch (deleteErr) {
             console.error('Error deleting message:', deleteErr);
+            //continue showing the message even if deletion fails
         }
 
-        // Create message container with copy button
-        status.innerHTML = `
-            <div class="message-container">
-                <div class="message-actions">
-                    <button id="copy-btn" class="icon-button" aria-label="Copy message">
-                        <img src="/glyphs/copy.png" alt="" width="20" height="20">
-                    </button>
-                </div>
-                <pre class="message-content">${escapeHtml(plaintext)}</pre>
-                <p class="warning">This message has been deleted from the server and cannot be accessed again</p>
-            </div>
-        `;
+        //clear any previous content
+        status.textContent = '';
+        
+        //create message container
+        const messageContainer = document.createElement('div');
+        messageContainer.className = 'message-container';
+        
+        //create actions container
+        const actionsContainer = document.createElement('div');
+        actionsContainer.className = 'message-actions';
+        
+        //create copy button
+        const copyBtn = document.createElement('button');
+        copyBtn.className = 'icon-button';
+        copyBtn.setAttribute('aria-label', 'Copy message');
+        
+        const copyIcon = document.createElement('img');
+        copyIcon.src = '/glyphs/copy.png';
+        copyIcon.alt = '';
+        copyIcon.width = 20;
+        copyIcon.height = 20;
+        
+        copyBtn.appendChild(copyIcon);
+        actionsContainer.appendChild(copyBtn);
+        
+        //create message content
+        const messageContent = document.createElement('pre');
+        messageContent.className = 'message-content';
+        messageContent.textContent = plaintext;
+        
+        //create warning message
+        const warning = document.createElement('p');
+        warning.className = 'warning';
+        warning.textContent = 'This message has been deleted from the server and cannot be accessed again';
+        
+        //assemble components
+        messageContainer.appendChild(actionsContainer);
+        messageContainer.appendChild(messageContent);
+        messageContainer.appendChild(warning);
+        
+        status.appendChild(messageContainer);
 
-        // Add copy button functionality
-        document.getElementById("copy-btn").addEventListener("click", () => {
+        //hide the decrypt form
+        document.getElementById("content").style.display = "none";
+
+        //add copy button functionality
+        copyBtn.addEventListener("click", () => {
             navigator.clipboard.writeText(plaintext).then(() => {
-                const btn = document.getElementById("copy-btn");
-                const img = btn.querySelector("img");
-                img.src = "/glyphs/check.gif";
+                copyIcon.src = "/glyphs/check.gif";
                 setTimeout(() => {
-                    img.src = "/glyphs/copy.png";
+                    copyIcon.src = "/glyphs/copy.png";
                 }, 1000);
             });
         });
 
-        // Hide the decrypt form since we're done with it
+        //hide the decrypt form since we're done with it
         document.getElementById("content").style.display = "none";
 
     } catch (err) {
         console.error(err);
         errorBox.textContent = "Failed to decrypt message. Please check your passphrase and try again.";
     }
-}
-
-// Helper function to escape HTML
-function escapeHtml(str) {
-    return str
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
 }
