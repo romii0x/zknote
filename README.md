@@ -20,7 +20,7 @@ Each message is linked to a unique, unguessable URL and is automatically deleted
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/shoutbin.git
+   git clone https://github.com/ianshapiro1/shoutbin.git
    cd shoutbin
    ```
 
@@ -40,8 +40,8 @@ Each message is linked to a unique, unguessable URL and is automatically deleted
 
 4. Configure environment variables:
    ```bash
-   # Make environment file
-   touch .env
+   cp .env.example .env
+   # Edit .env with your configuration
    ```
 
 ## Configuration
