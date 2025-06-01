@@ -55,7 +55,11 @@
     - implemented constant-time responses
     - added proper error handling for cleanup jobs
 
+**2025-06-01**
+- implement a test suite for core functionality
+- created a development build container using docker compose
+- messages can now be up to 100k characters
+- fixed how ssl is handled with environment variables
+
 ## TODO:
-- move to a feature branching system and add a contribution guide
 - rework expiration time logic; currently hardcoded to 24hrs
-- containerize the app

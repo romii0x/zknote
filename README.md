@@ -15,34 +15,50 @@ Each message is linked to a unique, unguessable URL and is automatically deleted
 - 🧠 **Zero Knowledge**  
   The server stores only ciphertext. Encryption keys never leave the client.
 
+## Local Development with Docker Compose
 
-## Installation
+This project now supports seamless local development using Docker Compose. Both the app and a Postgres database will be started together, and the database schema will be initialized automatically.
 
-1. Clone the repository:
-   ```bash
+### Prerequisites
+- [Docker](https://www.docker.com/get-started)
+- [Docker Compose](https://docs.docker.com/compose/)
+
+### Quick Start
+
+1. **Clone the repository:**
+   ```sh
    git clone https://github.com/ianshapiro1/shoutbin.git
    cd shoutbin
    ```
 
-2. Install dependencies:
-   ```bash
-   npm install
+2. **Start the app and database:**
+   ```sh
+   docker compose up --build
    ```
+   - The app will be available at [http://localhost:3000](http://localhost:3000)
+   - The database will persist data in a Docker-managed volume.
+   - The schema is automatically created on first run.
 
-3. Set up the database:
-   ```bash
-   # Create a PostgreSQL database
-   createdb shoutbin
-
-   # Apply the schema
-   psql shoutbin < db/schema.sql
+3. **Stop the app:**
+   ```sh
+   docker compose down
    ```
+   - To remove all data (reset the database):
+     ```sh
+     docker compose down --volumes
+     ```
 
-4. Configure environment variables:
-   ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
-   ```
+### Environment Variables
+- Copy `.env.example` to `.env` and adjust as needed for custom setups.
+- For local Docker Compose, no changes are needed by default.
+
+### Manual (Non-Docker) Setup
+If you want to run the app without Docker, you must:
+- Install Node.js 20+
+- Install Postgres 15+
+- Create the database and run `db/schema.sql` manually
+- Set up your `.env` file
+- Start the app with `npm install && npm start`
 
 ## Configuration
 
