@@ -31,7 +31,8 @@ const fastify = Fastify({
             }
         }
     },
-    trustProxy: true
+    trustProxy: true,
+    bodyLimit: 153600
 });
 
 //make fastify instance globally available for legacy code
