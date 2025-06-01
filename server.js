@@ -32,7 +32,7 @@ const fastify = Fastify({
         }
     },
     trustProxy: true,
-    bodyLimit: 153600
+    bodyLimit: 153600 //150kb
 });
 
 //make fastify instance globally available for legacy code
@@ -129,19 +129,6 @@ await fastify.register(rateLimit, {
 //register routes and plugins
 fastify.register(shoutPlugin);
 
-//HTTPS redirect (if enabled)
-if (process.env.FORCE_HTTPS === 'true') {
-    fastify.addHook('onRequest', (request, reply, done) => {
-        const isInsecure = request.headers['x-forwarded-proto'] !== 'https' && 
-                          request.protocol !== 'https';
-        if (isInsecure) {
-            reply.redirect(301, `https://${request.hostname}${request.url}`);
-            return;
-        }
-        done();
-    });
-}
-
 fastify.get("/", (req, reply) => {
     reply.sendFile("app.html");
 });
@@ -201,7 +188,7 @@ process.on('SIGINT', gracefulShutdown);
 //start the server
 const port = process.env.PORT || 3000;
 
-fastify.listen({ port }, (err, address) => {
+fastify.listen({ port, host: '0.0.0.0' }, (err, address) => {
     if (err) {
         fastify.log.error(err);
         process.exit(1);
