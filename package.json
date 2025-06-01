@@ -2,31 +2,61 @@
   "type": "module",
   "name": "shoutbin",
   "version": "1.0.0",
-  "description": "A minimalist, anonymous pastebin for self-destructing messages.",
-  "main": "index.js",
+  "description": "Zero-knowledge, self-destructing pastebin",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "test:watch": "NODE_OPTIONS=--experimental-vm-modules jest --watch",
+    "test:coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
+    "lint": "eslint .",
+    "format": "prettier --write ."
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ianshapiro1/shoutbin.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "pastebin",
+    "encryption",
+    "zero-knowledge",
+    "security",
+    "self-destructing",
+    "privacy"
+  ],
+  "author": "https://github.com/ianshapiro1",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/ianshapiro1/shoutbin/issues"
   },
   "homepage": "https://github.com/ianshapiro1/shoutbin#readme",
   "dependencies": {
-    "@fastify/cors": "^8.5.0",
-    "@fastify/helmet": "^11.1.1",
-    "@fastify/postgres": "^5.2.2",
-    "@fastify/rate-limit": "^9.1.0",
-    "@fastify/static": "^7.0.1",
-    "crypto": "^1.0.1",
-    "dotenv": "^16.4.5",
-    "fastify": "^4.26.2",
-    "node-cron": "^3.0.3"
+    "@fastify/cors": "^8.3.0",
+    "@fastify/helmet": "^11.0.0",
+    "@fastify/postgres": "^5.2.0",
+    "@fastify/rate-limit": "^8.0.3",
+    "@fastify/static": "^6.10.2",
+    "dotenv": "^16.3.1",
+    "fastify": "^4.19.2",
+    "node-cron": "^3.0.2",
+    "pg": "^8.11.1"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.6.0",
+    "eslint": "^8.44.0",
+    "eslint-config-prettier": "^8.8.0",
+    "jest": "^29.6.0",
+    "nodemon": "^3.0.1",
+    "prettier": "^3.0.0",
+    "supertest": "^6.3.3"
+  },
+  "jest": {
+    "transform": {},
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^(\\.{1,2}/.*)\\.js$": "$1"
+    },
+    "setupFiles": ["./test/setup.js"]
   }
 }
