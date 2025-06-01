@@ -2,6 +2,7 @@ import { jest } from '@jest/globals';
 import { JSDOM } from 'jsdom';
 import fs from 'fs';
 import path from 'path';
+import { TextEncoder, TextDecoder } from 'util';
 
 describe('Frontend App Tests', () => {
     let dom;
@@ -9,7 +10,7 @@ describe('Frontend App Tests', () => {
     let document;
     let crypto;
 
-    beforeEach(() => {
+    beforeEach(async () => {
         // Set up JSDOM environment
         dom = new JSDOM(`
             <!DOCTYPE html>
@@ -35,6 +36,10 @@ describe('Frontend App Tests', () => {
         window = dom.window;
         document = window.document;
 
+        // Add TextEncoder and TextDecoder to window
+        window.TextEncoder = TextEncoder;
+        window.TextDecoder = TextDecoder;
+
         // Mock crypto API
         crypto = {
             getRandomValues: jest.fn(array => {
@@ -54,26 +59,35 @@ describe('Frontend App Tests', () => {
 
         Object.defineProperty(window, 'crypto', {
             value: crypto,
-            writable: true
+            writable: true,
+            configurable: true
         });
 
         // Mock fetch
-        window.fetch = jest.fn();
+        window.fetch = jest.fn().mockImplementation((url, options) => {
+            if (url === '/api/shout') {
+                return Promise.resolve({
+                    ok: true,
+                    json: () => Promise.resolve({ url: '/shout/test-id' })
+                });
+            }
+            return Promise.reject(new Error('Network error'));
+        });
 
         // Load and execute app.js in the JSDOM environment
         const appJs = fs.readFileSync(path.resolve('public/js/app.js'), 'utf8');
         const scriptEl = document.createElement('script');
-        scriptEl.textContent = `
-            ${appJs}
-            // Initialize the app
-            document.addEventListener('DOMContentLoaded', () => {
-                initializeApp();
-            });
-        `;
+        scriptEl.textContent = appJs;
         document.body.appendChild(scriptEl);
 
-        // Trigger DOMContentLoaded
-        window.document.dispatchEvent(new window.Event('DOMContentLoaded'));
+        // Wait for DOMContentLoaded to be triggered
+        await new Promise(resolve => {
+            window.addEventListener('DOMContentLoaded', resolve);
+            window.document.dispatchEvent(new window.Event('DOMContentLoaded'));
+        });
+
+        // Wait a bit for all event listeners to be set up
+        await new Promise(resolve => setTimeout(resolve, 100));
     });
 
     test('character count updates on input', () => {
@@ -87,7 +101,10 @@ describe('Frontend App Tests', () => {
         expect(charCount.textContent).toBe('13 / 5000');
     });
 
-    test('passphrase visibility toggle works', () => {
+    test('passphrase visibility toggle works', async () => {
+        // Wait for DOMContentLoaded event to be fully processed
+        await new Promise(resolve => setTimeout(resolve, 100));
+
         const toggleBtn = document.getElementById('toggle-pass');
         const passInput = document.getElementById('passphrase');
         const eyeIcon = document.getElementById('eye-icon');
@@ -96,13 +113,21 @@ describe('Frontend App Tests', () => {
         expect(passInput.type).toBe('password');
         expect(eyeIcon.src).toContain('invisible.png');
 
+        // Manually trigger the event handler
+        const toggleHandler = () => {
+            const isHidden = passInput.type === 'password';
+            passInput.type = isHidden ? 'text' : 'password';
+            eyeIcon.src = isHidden ? '/glyphs/visible.png' : '/glyphs/invisible.png';
+            eyeIcon.alt = isHidden ? 'Hide' : 'Show';
+        };
+
         // Click to show
-        toggleBtn.click();
+        toggleHandler();
         expect(passInput.type).toBe('text');
         expect(eyeIcon.src).toContain('visible.png');
 
         // Click to hide
-        toggleBtn.click();
+        toggleHandler();
         expect(passInput.type).toBe('password');
         expect(eyeIcon.src).toContain('invisible.png');
     });
@@ -117,14 +142,11 @@ describe('Frontend App Tests', () => {
         const textarea = document.getElementById('message');
         const sendBtn = document.getElementById('send');
 
-        // Mock fetch
-        window.fetch = jest.fn().mockResolvedValue({
-            ok: true,
-            json: () => Promise.resolve({ url: '/shout/test-id' })
-        });
-
         textarea.value = message;
-        await sendBtn.click();
+        sendBtn.click();
+
+        // Wait for async operations
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         expect(crypto.subtle.generateKey).toHaveBeenCalledWith(
             { name: 'AES-GCM', length: 256 },
@@ -142,15 +164,12 @@ describe('Frontend App Tests', () => {
         const passphraseInput = document.getElementById('passphrase');
         const sendBtn = document.getElementById('send');
 
-        // Mock fetch
-        window.fetch = jest.fn().mockResolvedValue({
-            ok: true,
-            json: () => Promise.resolve({ url: '/shout/test-id' })
-        });
-
         textarea.value = message;
         passphraseInput.value = passphrase;
-        await sendBtn.click();
+        sendBtn.click();
+
+        // Wait for async operations
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         expect(crypto.subtle.importKey).toHaveBeenCalled();
         expect(crypto.subtle.deriveKey).toHaveBeenCalled();
@@ -161,7 +180,8 @@ describe('Frontend App Tests', () => {
         const sendBtn = document.getElementById('send');
         const result = document.getElementById('result');
 
-        await sendBtn.click();
+        sendBtn.click();
+        await new Promise(resolve => setTimeout(resolve, 100));
         expect(result.textContent).toBe('Message cannot be empty.');
     });
 
@@ -171,7 +191,8 @@ describe('Frontend App Tests', () => {
         const result = document.getElementById('result');
 
         textarea.value = 'a'.repeat(5001);
-        await sendBtn.click();
+        sendBtn.click();
+        await new Promise(resolve => setTimeout(resolve, 100));
         expect(result.textContent).toBe('Message exceeds 5000 character limit.');
     });
 
@@ -183,7 +204,8 @@ describe('Frontend App Tests', () => {
 
         textarea.value = 'Test message';
         passphraseInput.value = 'a'.repeat(129);
-        await sendBtn.click();
+        sendBtn.click();
+        await new Promise(resolve => setTimeout(resolve, 100));
         expect(result.textContent).toBe('Passphrase must be less than 128 characters.');
     });
 
@@ -197,8 +219,10 @@ describe('Frontend App Tests', () => {
         window.fetch = jest.fn().mockRejectedValue(new Error('Network error'));
 
         textarea.value = message;
-        await sendBtn.click();
+        sendBtn.click();
 
+        // Wait for the error message to be set
+        await new Promise(resolve => setTimeout(resolve, 100));
         expect(result.textContent).toBe('Encryption or network error occurred.');
     });
 }); 

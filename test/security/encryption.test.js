@@ -2,19 +2,34 @@ import { jest } from '@jest/globals';
 import { JSDOM } from 'jsdom';
 import fs from 'fs';
 import path from 'path';
+import { TextEncoder, TextDecoder } from 'util';
 
 describe('Encryption Security Tests', () => {
     let window;
+    let document;
     let crypto;
 
     beforeEach(() => {
-        const dom = new JSDOM('', {
+        const dom = new JSDOM(`
+            <!DOCTYPE html>
+            <html>
+                <body>
+                    <div id="app"></div>
+                </body>
+            </html>
+        `, {
             url: 'http://localhost',
             contentType: 'text/html',
             runScripts: 'dangerously',
             resources: 'usable'
         });
+
         window = dom.window;
+        document = window.document;
+
+        // Add TextEncoder and TextDecoder to window
+        window.TextEncoder = TextEncoder;
+        window.TextDecoder = TextDecoder;
 
         // Mock crypto API with real implementations for key tests
         crypto = {
@@ -69,34 +84,31 @@ describe('Encryption Security Tests', () => {
 
         Object.defineProperty(window, 'crypto', {
             value: crypto,
-            writable: true
+            writable: true,
+            configurable: true
         });
 
         // Load and execute app.js and view.js in the JSDOM environment
         const appJs = fs.readFileSync(path.resolve('public/js/app.js'), 'utf8');
         const viewJs = fs.readFileSync(path.resolve('public/js/view.js'), 'utf8');
+        
         const scriptEl = document.createElement('script');
         scriptEl.textContent = `
             ${appJs}
             ${viewJs}
-            // Initialize both modules
-            document.addEventListener('DOMContentLoaded', () => {
-                if (typeof initializeApp === 'function') initializeApp();
-                if (typeof initializeView === 'function') initializeView();
-            });
+            window.encrypt = encrypt;
+            window.encryptWithPassphrase = encryptWithPassphrase;
+            window.decryptMessage = decryptMessage;
         `;
-        window.document.body.appendChild(scriptEl);
-
-        // Trigger DOMContentLoaded
-        window.document.dispatchEvent(new window.Event('DOMContentLoaded'));
+        document.body.appendChild(scriptEl);
     });
 
     describe('Key Generation', () => {
         test('generates AES-GCM 256-bit keys', async () => {
             const appJs = fs.readFileSync(path.resolve('public/js/app.js'), 'utf8');
-            const scriptEl = window.document.createElement('script');
+            const scriptEl = document.createElement('script');
             scriptEl.textContent = appJs;
-            window.document.body.appendChild(scriptEl);
+            document.body.appendChild(scriptEl);
 
             await window.encrypt('test message');
 
@@ -109,9 +121,9 @@ describe('Encryption Security Tests', () => {
 
         test('uses PBKDF2 with strong parameters for passphrase', async () => {
             const appJs = fs.readFileSync(path.resolve('public/js/app.js'), 'utf8');
-            const scriptEl = window.document.createElement('script');
+            const scriptEl = document.createElement('script');
             scriptEl.textContent = appJs;
-            window.document.body.appendChild(scriptEl);
+            document.body.appendChild(scriptEl);
 
             await window.encryptWithPassphrase('test message', 'test passphrase');
 
@@ -141,9 +153,9 @@ describe('Encryption Security Tests', () => {
     describe('IV Generation', () => {
         test('uses unique 96-bit IV for each encryption', async () => {
             const appJs = fs.readFileSync(path.resolve('public/js/app.js'), 'utf8');
-            const scriptEl = window.document.createElement('script');
+            const scriptEl = document.createElement('script');
             scriptEl.textContent = appJs;
-            window.document.body.appendChild(scriptEl);
+            document.body.appendChild(scriptEl);
 
             const ivs = new Set();
             for (let i = 0; i < 100; i++) {
@@ -164,9 +176,9 @@ describe('Encryption Security Tests', () => {
     describe('Salt Generation', () => {
         test('uses unique 128-bit salt for each passphrase encryption', async () => {
             const appJs = fs.readFileSync(path.resolve('public/js/app.js'), 'utf8');
-            const scriptEl = window.document.createElement('script');
+            const scriptEl = document.createElement('script');
             scriptEl.textContent = appJs;
-            window.document.body.appendChild(scriptEl);
+            document.body.appendChild(scriptEl);
 
             const salts = new Set();
             for (let i = 0; i < 100; i++) {
@@ -187,9 +199,9 @@ describe('Encryption Security Tests', () => {
     describe('Decryption', () => {
         test('decrypts messages with correct key', async () => {
             const viewJs = fs.readFileSync(path.resolve('public/js/view.js'), 'utf8');
-            const scriptEl = window.document.createElement('script');
+            const scriptEl = document.createElement('script');
             scriptEl.textContent = viewJs;
-            window.document.body.appendChild(scriptEl);
+            document.body.appendChild(scriptEl);
 
             const mockData = {
                 message: btoa([1, 2, 3]),
@@ -203,9 +215,9 @@ describe('Encryption Security Tests', () => {
 
         test('decrypts messages with correct passphrase', async () => {
             const viewJs = fs.readFileSync(path.resolve('public/js/view.js'), 'utf8');
-            const scriptEl = window.document.createElement('script');
+            const scriptEl = document.createElement('script');
             scriptEl.textContent = viewJs;
-            window.document.body.appendChild(scriptEl);
+            document.body.appendChild(scriptEl);
 
             const mockData = {
                 message: btoa([1, 2, 3]),
@@ -219,9 +231,9 @@ describe('Encryption Security Tests', () => {
 
         test('fails decryption with incorrect key/passphrase', async () => {
             const viewJs = fs.readFileSync(path.resolve('public/js/view.js'), 'utf8');
-            const scriptEl = window.document.createElement('script');
+            const scriptEl = document.createElement('script');
             scriptEl.textContent = viewJs;
-            window.document.body.appendChild(scriptEl);
+            document.body.appendChild(scriptEl);
 
             crypto.subtle.decrypt.mockRejectedValue(new Error('Decryption failed'));
 
