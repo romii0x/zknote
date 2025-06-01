@@ -43,9 +43,10 @@ export async function deleteExpiredMessages(fastify) {
         while (true) {
             const result = await client.query(
                 `WITH deleted AS (
-                    DELETE FROM messages 
-                    WHERE expires < $1 
-                    LIMIT 1000
+                    DELETE FROM messages
+                    WHERE id IN (
+                        SELECT id FROM messages WHERE expires < $1 LIMIT 1000
+                    )
                     RETURNING id
                 )
                 SELECT COUNT(*) as count FROM deleted`,
