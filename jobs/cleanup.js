@@ -27,7 +27,7 @@ export async function deleteExpiredMessages(fastify) {
         errors: []
     };
 
-    const client = await fastify.pg.connect();
+    const client = await fastify.pg.pool.connect();
     try {
         const lockAcquired = await acquireCleanupLock(client);
         if (!lockAcquired) {
@@ -67,14 +67,14 @@ export async function deleteExpiredMessages(fastify) {
 
     } catch (err) {
         metrics.errors.push(`Cleanup failed: ${err.message}`);
-        fastify.log.error('Cleanup job error:', err);
+        fastify.log.error({ err }, 'Cleanup job error');
     } finally {
         try {
             await releaseCleanupLock(client);
-            client.release();
+            await client.release();
         } catch (err) {
             metrics.errors.push(`Failed to cleanup resources: ${err.message}`);
-            fastify.log.error('Failed to cleanup resources:', err);
+            fastify.log.error({ err }, 'Failed to cleanup resources');
         }
     }
 

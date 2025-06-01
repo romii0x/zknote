@@ -57,6 +57,9 @@
   "jest": {
     "transform": {},
     "testEnvironment": "node",
+    "testEnvironmentOptions": {
+      "url": "http://localhost"
+    },
     "moduleNameMapper": {
       "^(\\.{1,2}/.*)\\.js$": "$1"
     },
