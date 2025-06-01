@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     //character limit
     textarea.addEventListener("input", () => {
-        charCount.textContent = `${textarea.value.length} / 5000`;
+        charCount.textContent = `${textarea.value.length} / 100000`;
     });
 
     //passphrase glyph handler
@@ -36,8 +36,8 @@ document.addEventListener("DOMContentLoaded", () => {
             result.textContent = "Message cannot be empty.";
             return;
         }
-        if (message.length > 5000) {
-            result.textContent = "Message exceeds 5000 character limit.";
+        if (message.length > 100000) {
+            result.textContent = "Message exceeds 100000 character limit.";
             return;
         }
         if (passphrase.length > 128) {

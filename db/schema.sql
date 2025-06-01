@@ -4,7 +4,7 @@ DROP TABLE IF EXISTS messages;
 -- Create messages table with enhanced security features
 CREATE TABLE messages (
     id VARCHAR(22) PRIMARY KEY CHECK (id ~ '^[A-Za-z0-9_-]{22}$'),
-    message TEXT NOT NULL CHECK (LENGTH(message) <= 8000),
+    message TEXT NOT NULL CHECK (LENGTH(message) <= 100000),
     iv VARCHAR(24) NOT NULL,
     salt VARCHAR(64) CHECK (salt IS NULL OR salt ~ '^[A-Za-z0-9_-]{16,64}$'),
     delete_token VARCHAR(32) NOT NULL,

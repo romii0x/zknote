@@ -2,7 +2,7 @@ import { randomUUID, timingSafeEqual } from "crypto";
 import { Buffer } from "buffer";
 import { query } from "../db/db.js";
 
-const MAX_MESSAGE_SIZE = 8000;
+const MAX_MESSAGE_SIZE = 133333;
 const MIN_MESSAGE_SIZE = 1;
 const IV_PATTERN = "^[A-Za-z0-9_-]{16,24}$";
 const SALT_PATTERN = "^[A-Za-z0-9_-]{16,64}$";
