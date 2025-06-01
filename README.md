@@ -64,15 +64,14 @@ npm start
 
 The application will be available at `localhost:PORT`
 
-### Message Creation
-1. Enter your message
-2. Optionally set a passphrase
-3. Click "Create" to get a shareable link
+## Contributing
 
-### Message Retrieval
-1. Open the received link
-2. Enter passphrase if required
-3. Message is displayed and automatically deleted
+Contributions are welcome! To get started:
+
+- Fork the repo and create a new branch
+- Make your changes
+- Run the tests to make sure everything passes
+- Submit a pull request with a clear description
 
 ## Development
 
