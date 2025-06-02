@@ -23,6 +23,16 @@
           <img id="eye-icon" src="/glyphs/invisible.png" alt="" width="20" height="20" />
         </button>
       </div>
+      <label for="expiry" style="margin-left:1em;">Message expires in:</label>
+      <select id="expiry">
+        <option value="60000">1 min</option>
+        <option value="180000">3 min</option>
+        <option value="300000">5 min</option>
+        <option value="600000">10 min</option>
+        <option value="3600000">1 hour</option>
+        <option value="86400000" selected>24 hours</option>
+        <option value="604800000">1 week</option>
+      </select>
     </div>
     <button id="send" disabled>Send Shout</button>
     <div id="result" role="status" aria-live="polite"></div> 

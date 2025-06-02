@@ -31,6 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("send").addEventListener("click", async () => {
         const message = textarea.value;
         const passphrase = document.getElementById("passphrase").value.trim();
+        const expiry = parseInt(document.getElementById("expiry").value, 10);
 
         if (!message) {
             result.textContent = "Message cannot be empty.";
@@ -54,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             const { ciphertext, key, iv, salt } = encryptionResult;
-            const body = { message: ciphertext, iv };
+            const body = { message: ciphertext, iv, expiry };
 
             if (salt) body.salt = salt;
 

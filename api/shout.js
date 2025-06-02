@@ -91,18 +91,24 @@ export default async function shoutPlugin(fastify) {
                     salt: {
                         type: "string",
                         pattern: SALT_PATTERN
+                    },
+                    expiry: {
+                        type: "integer",
+                        enum: [60000, 180000, 300000, 600000, 3600000, 86400000, 604800000],
+                        default: 86400000
                     }
                 },
                 additionalProperties: false
             }
         }
     }, async (request, reply) => {
-        const { message, iv, salt } = request.body;
+        const { message, iv, salt, expiry } = request.body;
 
         try {
             const id = uuidToBase64url(randomUUID());
             const deleteToken = generateDeleteToken();
-            const expires = Date.now() + MESSAGE_EXPIRY;
+            const allowedExpiries = [60000, 180000, 300000, 600000, 3600000, 86400000, 604800000];
+            const expires = Date.now() + (allowedExpiries.includes(expiry) ? expiry : MESSAGE_EXPIRY);
 
             await query(
                 `INSERT INTO messages (id, message, iv, salt, delete_token, expires) 
