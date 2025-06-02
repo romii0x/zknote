@@ -22,7 +22,6 @@ process.env.NODE_ENV = 'test';
 process.env.PORT = 3001;
 process.env.DATABASE_URL = 'postgres://postgres:postgres@localhost:5432/shoutbin_test';
 process.env.LOG_LEVEL = 'error';
-process.env.FORCE_HTTPS = 'false';
 
 // Minimal crypto/fetch mocks if not present
 if (typeof global.crypto === 'undefined') {

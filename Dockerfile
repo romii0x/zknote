@@ -1,25 +1,24 @@
-# Use official Node.js 20 slim image
-FROM node:20-slim
+# Use official Node.js 20 image (full version for development tools)
+FROM node:20
 
 # Create app directory
 WORKDIR /usr/src/app
 
-# Install dependencies first (for better layer caching)
+# Install dependencies with all dev dependencies included
 COPY package*.json ./
-RUN npm ci --omit=dev
+RUN npm install
 
 # Copy app source
 COPY . .
 
-# Set environment variables
-ENV NODE_ENV=production
-
-# Use a non-root user for security
-RUN useradd -m shoutbin
-USER shoutbin
+# Set development environment
+ENV NODE_ENV=development
+ENV PORT=3000
+ENV LOG_LEVEL=debug
+ENV FORCE_HTTPS=false
 
 # Expose the app port
 EXPOSE 3000
 
-# Start the server
-CMD ["node", "server.js"] 
+# Start the development server with hot reloading
+CMD ["npm", "run", "dev"] 
