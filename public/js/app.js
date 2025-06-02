@@ -25,6 +25,18 @@ document.addEventListener("DOMContentLoaded", () => {
         const eyeIcon = document.getElementById("eye-icon");
         const isHidden = passInput.type === "password";
         
+        // Prevent accidental password exposure
+        if (!isHidden) {
+            // Auto-hide password after 30 seconds if left visible
+            setTimeout(() => {
+                if (passInput.type === "text") {
+                    passInput.type = "password";
+                    eyeIcon.src = "/glyphs/invisible.png";
+                    eyeIcon.alt = "Show";
+                }
+            }, 30000);
+        }
+        
         passInput.type = isHidden ? "text" : "password";
         eyeIcon.src = `/glyphs/${isHidden ? "visible" : "invisible"}.png`;
         eyeIcon.alt = isHidden ? "Hide" : "Show";
@@ -144,36 +156,59 @@ async function encrypt(plaintext) {
 
 //encrypt with passphrase
 async function encryptWithPassphrase(plaintext, passphrase) {
-    const enc = new TextEncoder();
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const salt = crypto.getRandomValues(new Uint8Array(16));
-    
-    const keyMaterial = await crypto.subtle.importKey(
-        "raw", enc.encode(passphrase), "PBKDF2", false, ["deriveKey"]
-    );
-    const key = await crypto.subtle.deriveKey(
-        {
-            name: "PBKDF2",
-            salt,
-            iterations: 100000,
-            hash: "SHA-256"
-        },
-        keyMaterial,
-        { name: "AES-GCM", length: 256 },
-        true,
-        ["encrypt", "decrypt"]
-    );
+    try {
+        const enc = new TextEncoder();
+        const iv = crypto.getRandomValues(new Uint8Array(12));
+        const salt = crypto.getRandomValues(new Uint8Array(16));
+        
+        const keyMaterial = await crypto.subtle.importKey(
+            "raw", enc.encode(passphrase), "PBKDF2", false, ["deriveKey"]
+        );
+        const key = await crypto.subtle.deriveKey(
+            {
+                name: "PBKDF2",
+                salt,
+                iterations: 100000,
+                hash: "SHA-256"
+            },
+            keyMaterial,
+            { name: "AES-GCM", length: 256 },
+            true,
+            ["encrypt", "decrypt"]
+        );
 
-    const ciphertext = await crypto.subtle.encrypt(
-        { name: "AES-GCM", iv },
-        key,
-        enc.encode(plaintext)
-    );
+        const ciphertext = await crypto.subtle.encrypt(
+            { name: "AES-GCM", iv },
+            key,
+            enc.encode(plaintext)
+        );
 
-    return {
-        ciphertext: uint8ArrayToBase64(new Uint8Array(ciphertext)),
-        key: null, // no key in URL
-        iv: uint8ArrayToBase64url(iv),
-        salt: uint8ArrayToBase64url(salt)
-    };
+        const result = {
+            ciphertext: uint8ArrayToBase64(new Uint8Array(ciphertext)),
+            key: null, // no key in URL
+            iv: uint8ArrayToBase64url(iv),
+            salt: uint8ArrayToBase64url(salt)
+        };
+
+        // Clean up sensitive data from memory
+        iv.fill(0);
+        salt.fill(0);
+        if (typeof plaintext === "string") {
+            plaintext = "0".repeat(plaintext.length);
+        }
+        if (typeof passphrase === "string") {
+            passphrase = "0".repeat(passphrase.length);
+        }
+
+        return result;
+    } catch (error) {
+        // Clean up on error
+        if (typeof plaintext === "string") {
+            plaintext = "0".repeat(plaintext.length);
+        }
+        if (typeof passphrase === "string") {
+            passphrase = "0".repeat(passphrase.length);
+        }
+        throw error;
+    }
 }

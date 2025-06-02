@@ -112,18 +112,20 @@ async function decryptMessage(passphrase) {
     
     try {
         let key;
+        let keyBytes;
+        let salt;
 
         if (passphrase === null) {
             //no passphrase
             const hash = location.hash.slice(1);
             const keyParam = new URLSearchParams(hash).get("k");
             if (!keyParam) throw new Error("Missing decryption key.");
-            const keyBytes = base64urlToBytes(keyParam);
+            keyBytes = base64urlToBytes(keyParam);
             key = await crypto.subtle.importKey("raw", keyBytes, { name: "AES-GCM" }, false, ["decrypt"]);
         } else if (saltB64) {
             //passphrase required
             const enc = new TextEncoder();
-            const salt = base64urlToBytes(saltB64);
+            salt = base64urlToBytes(saltB64);
 
             const keyMaterial = await crypto.subtle.importKey(
                 "raw", enc.encode(passphrase), "PBKDF2", false, ["deriveKey"]
@@ -153,6 +155,14 @@ async function decryptMessage(passphrase) {
         );
 
         const plaintext = new TextDecoder().decode(plaintextBuffer);
+
+        // Clean up sensitive data from memory
+        if (keyBytes) keyBytes.fill(0);
+        if (salt) salt.fill(0);
+        if (iv) iv.fill(0);
+        if (typeof passphrase === "string") {
+            passphrase = "0".repeat(passphrase.length);
+        }
         
         //delete the message after successful decryption
         try {
@@ -229,6 +239,10 @@ async function decryptMessage(passphrase) {
         document.getElementById("content").style.display = "none";
 
     } catch (err) {
+        // Clean up sensitive data on error
+        if (typeof passphrase === "string") {
+            passphrase = "0".repeat(passphrase.length);
+        }
         console.error(err);
         errorBox.textContent = "Failed to decrypt message. Please check your passphrase and try again.";
     }
