@@ -71,6 +71,10 @@
 - ui/ux overhaul
 - added message timeout selection
 
+**2025-06-02**
+- formatted codebase with prettier
+- cleanup up comments around the app
+
 ## TODO:
 
 - rework expiration time logic; currently hardcoded to 24hrs

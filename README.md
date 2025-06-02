@@ -48,7 +48,6 @@ DB_CA_CERT=                  # Path to CA cert if DB_SSL=true
 ```bash
 npm run dev      # Start development server with hot reload
 npm test        # Run test suite
-npm run lint    # Run ESLint
 npm run format  # Run Prettier
 ```
 
