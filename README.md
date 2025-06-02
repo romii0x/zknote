@@ -75,4 +75,4 @@ npm run format  # Run Prettier
 
 ## License
 
-[MIT](LICENSE)  
+[MIT](LICENSE)

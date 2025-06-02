@@ -1,6 +1,7 @@
 #### [< Back to Repo Page](https://github.com/ianshapiro1/shoutbin)
 
 # 🔒 Security
+
 ShoutBin is designed with a strong focus on privacy, anonymity, and zero-knowledge architecture. Below is a breakdown of its implemented and planned security features.
 
 ## ✅ Implemented
@@ -8,6 +9,7 @@ ShoutBin is designed with a strong focus on privacy, anonymity, and zero-knowled
 ### ✅ Client-Side Security
 
 #### ✅ Zero-Knowledge Encryption
+
 - Encryption performed entirely client-side using AES-GCM through the Web Crypto API
 - Server never sees decrypted content or encryption keys
 - Decryption key appended to URL fragment (#k=...), never sent to server
@@ -18,6 +20,7 @@ ShoutBin is designed with a strong focus on privacy, anonymity, and zero-knowled
 - Auto-hiding of visible passwords after 30 seconds
 
 #### ✅ XSS Prevention
+
 - All DOM manipulation uses safe methods (`textContent`, `createElement`)
 - No `innerHTML` or direct HTML injection
 - Strict input validation on all user inputs
@@ -27,6 +30,7 @@ ShoutBin is designed with a strong focus on privacy, anonymity, and zero-knowled
 ### ✅ Server-Side Security
 
 #### ✅ Access Controls
+
 - Unguessable URLs using base64url-encoded UUIDs (128-bit)
 - Authenticated delete tokens prevent unauthorized deletions
 - No IP addresses or identifiers stored
@@ -34,6 +38,7 @@ ShoutBin is designed with a strong focus on privacy, anonymity, and zero-knowled
 - Strict message size limits enforced
 
 #### ✅ Rate Limiting & Abuse Prevention
+
 - Global rate limiting with IP-based tracking
 - Automatic IP banning for repeated violations
 - Endpoint-specific limits:
@@ -42,6 +47,7 @@ ShoutBin is designed with a strong focus on privacy, anonymity, and zero-knowled
 - Ban duration: 1 hour after 3 violations
 
 #### ✅ Resource Protection
+
 - Batched cleanup jobs with advisory locks
 - Statement timeouts prevent long-running queries
 - Proper error handling and resource cleanup
@@ -52,6 +58,7 @@ ShoutBin is designed with a strong focus on privacy, anonymity, and zero-knowled
 ### ✅ Network Security
 
 #### ✅ HTTP Security Headers
+
 - Strict Content Security Policy (CSP)
   - Default-src: 'none'
   - Script/Style/Image-src: 'self' (plus data: for images)
@@ -64,12 +71,14 @@ ShoutBin is designed with a strong focus on privacy, anonymity, and zero-knowled
 - Permissions-Policy restricts browser features
 
 #### ✅ Anti-Timing Attack Measures
+
 - Constant-time comparisons for sensitive operations
 - Simulated delays normalize response times
 - Consistent error responses prevent timing analysis
 - Generic error messages prevent information leakage
 
 #### ✅ User Interface Security
+
 - Secure clipboard operations using Clipboard API
 - Visual feedback for security-critical actions
 - Progressive error messages without information leakage
@@ -80,6 +89,7 @@ ShoutBin is designed with a strong focus on privacy, anonymity, and zero-knowled
 ## 🔧 Planned / In Progress
 
 ### 🔧 Additional Security
+
 - Browser memory barriers using SharedArrayBuffer
 - Protection against browser developer tools manipulation
 - Secure clipboard implementation with auto-clear
@@ -92,6 +102,7 @@ ShoutBin is designed with a strong focus on privacy, anonymity, and zero-knowled
 - Automated security testing suite
 
 ### 🔧 UX Security Improvements
+
 - Disable decrypt button during operations
 - Add loading states for cryptographic operations
 - Password strength indicators

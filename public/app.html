@@ -1,41 +1,62 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-  <meta http-equiv="X-Frame-Options" content="DENY" />
-  <meta name="referrer" content="no-referrer" />
-  <title>ShoutBin - Self-Destructing Messages</title>
-  <link rel="stylesheet" href="/css/styles.css" />
-  <link rel="icon" href="data:," />
-</head>
-<body>
-  <main>
-    <h1>ShoutBin</h1>
-    <p class="tagline">Send encrypted, self-destructing messages</p>
-    <textarea id="message" placeholder="Write your secret message..." maxlength="100000" spellcheck="false"></textarea>
-    <div id="char-count" aria-live="polite">0 / 100000</div>
-    <div class="passphrase-wrapper">
-      <div class="input-with-icon" style="flex: 1 1 auto;">
-        <input type="password" id="passphrase" maxlength="128" autocomplete="new-password" placeholder="Leave blank for auto-generated key" />
-        <button type="button" id="toggle-pass" aria-label="Toggle password visibility">
-          <img id="eye-icon" src="/glyphs/invisible.png" alt="" width="20" height="20" />
-        </button>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta name="referrer" content="no-referrer" />
+    <title>ShoutBin - Self-Destructing Messages</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="icon" href="data:," />
+  </head>
+  <body>
+    <main>
+      <h1>ShoutBin</h1>
+      <p class="tagline">Send encrypted, self-destructing messages</p>
+      <textarea
+        id="message"
+        placeholder="Write your secret message..."
+        maxlength="100000"
+        spellcheck="false"
+      ></textarea>
+      <div id="char-count" aria-live="polite">0 / 100000</div>
+      <div class="passphrase-wrapper">
+        <div class="input-with-icon" style="flex: 1 1 auto">
+          <input
+            type="password"
+            id="passphrase"
+            maxlength="128"
+            autocomplete="new-password"
+            placeholder="Leave blank for auto-generated key"
+          />
+          <button
+            type="button"
+            id="toggle-pass"
+            aria-label="Toggle password visibility"
+          >
+            <img
+              id="eye-icon"
+              src="/glyphs/invisible.png"
+              alt=""
+              width="20"
+              height="20"
+            />
+          </button>
+        </div>
+        <select id="expiry" class="expiry-inline">
+          <option value="60000">1 min</option>
+          <option value="180000">3 min</option>
+          <option value="300000">5 min</option>
+          <option value="600000">10 min</option>
+          <option value="3600000">1 hour</option>
+          <option value="86400000" selected>24 hours</option>
+          <option value="604800000">1 week</option>
+        </select>
       </div>
-      <select id="expiry" class="expiry-inline">
-        <option value="60000">1 min</option>
-        <option value="180000">3 min</option>
-        <option value="300000">5 min</option>
-        <option value="600000">10 min</option>
-        <option value="3600000">1 hour</option>
-        <option value="86400000" selected>24 hours</option>
-        <option value="604800000">1 week</option>
-      </select>
-    </div>
-    <button id="send" disabled>Send Shout</button>
-    <div id="result" role="status" aria-live="polite"></div> 
-  </main>
-  <script src="/js/app.js" defer></script>
-</body>
+      <button id="send" disabled>Send Shout</button>
+      <div id="result" role="status" aria-live="polite"></div>
+    </main>
+    <script src="/js/app.js" defer></script>
+  </body>
 </html>

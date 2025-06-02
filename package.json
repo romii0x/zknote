@@ -63,7 +63,9 @@
     "moduleNameMapper": {
       "^(\\.{1,2}/.*)\\.js$": "$1"
     },
-    "setupFiles": ["./test/setup.js"],
+    "setupFiles": [
+      "./test/setup.js"
+    ],
     "testMatch": [
       "**/test/**/*.test.js"
     ],

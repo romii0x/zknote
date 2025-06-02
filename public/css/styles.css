@@ -41,7 +41,7 @@ textarea {
   box-sizing: border-box;
   border: 1px solid #ccc;
   border-radius: 8px;
-  font-family: 'Consolas', 'Monaco', monospace;
+  font-family: "Consolas", "Monaco", monospace;
   line-height: 1.4;
   tab-size: 4;
 }
@@ -71,7 +71,9 @@ button {
   font-weight: 600;
   letter-spacing: 0.5px;
   box-shadow: none;
-  transition: background 0.2s, box-shadow 0.2s;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
 }
 
 button:hover {
@@ -118,7 +120,8 @@ button:focus {
 }
 
 /* optional passphrase */
-.passphrase-wrapper, .decrypt-row {
+.passphrase-wrapper,
+.decrypt-row {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -229,7 +232,9 @@ button:focus {
   justify-content: center;
   vertical-align: middle;
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
 }
 
 .message-actions .icon-button:hover,
@@ -260,7 +265,7 @@ button:focus {
   overflow-x: auto;
   white-space: pre-wrap;
   word-wrap: break-word;
-  font-family: 'Consolas', 'Monaco', monospace;
+  font-family: "Consolas", "Monaco", monospace;
   font-size: 0.95rem;
   line-height: 1.4;
   tab-size: 4;
@@ -322,7 +327,9 @@ button:focus {
   background: #fff;
   color: #222;
   box-sizing: border-box;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -337,7 +344,11 @@ button:focus {
 }
 
 /* Remove old .expiry-controls styles if present */
-.expiry-controls, .expiry-controls label, .expiry-controls select { all: unset; }
+.expiry-controls,
+.expiry-controls label,
+.expiry-controls select {
+  all: unset;
+}
 
 /* Softer selection color for all text */
 ::selection {
@@ -360,7 +371,9 @@ button:focus {
   font-weight: 600;
   letter-spacing: 0.5px;
   box-shadow: none;
-  transition: background 0.2s, box-shadow 0.2s;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
 }
 
 #decrypt-btn:hover {
@@ -369,4 +382,6 @@ button:focus {
 }
 
 /* Remove message-actions styles if present */
-.message-actions { all: unset; }
+.message-actions {
+  all: unset;
+}
