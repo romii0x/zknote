@@ -4,6 +4,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const result = document.getElementById("result");
     const charCount = document.getElementById("char-count");
 
+    // Update char count on load (for autofill/session restore)
+    charCount.textContent = `${textarea.value.length} / 100000`;
+
     //check webcrypto support
     if (window.crypto?.subtle) {
         sendBtn.disabled = false;
@@ -20,10 +23,10 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("toggle-pass").addEventListener("click", () => {
         const passInput = document.getElementById("passphrase");
         const eyeIcon = document.getElementById("eye-icon");
-
         const isHidden = passInput.type === "password";
+        
         passInput.type = isHidden ? "text" : "password";
-        eyeIcon.src = isHidden ? "/glyphs/visible.png" : "/glyphs/invisible.png";
+        eyeIcon.src = `/glyphs/${isHidden ? "visible" : "invisible"}.png`;
         eyeIcon.alt = isHidden ? "Hide" : "Show";
     });
 

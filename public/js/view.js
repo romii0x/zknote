@@ -31,8 +31,9 @@ async function initializeView(data) {
         const passInput = document.getElementById("passphrase");
         const eyeIcon = document.getElementById("eye-icon");
         const isHidden = passInput.type === "password";
+        
         passInput.type = isHidden ? "text" : "password";
-        eyeIcon.src = isHidden ? "/glyphs/visible.png" : "/glyphs/invisible.png";
+        eyeIcon.src = `/glyphs/${isHidden ? "visible" : "invisible"}.png`;
         eyeIcon.alt = isHidden ? "Hide" : "Show";
     });
 
@@ -177,35 +178,33 @@ async function decryptMessage(passphrase) {
         //create message container
         const messageContainer = document.createElement('div');
         messageContainer.className = 'message-container';
-        
+
         //create actions container
         const actionsContainer = document.createElement('div');
         actionsContainer.className = 'message-actions';
-        
+
         //create copy button
         const copyBtn = document.createElement('button');
         copyBtn.className = 'icon-button';
         copyBtn.setAttribute('aria-label', 'Copy message');
-        
         const copyIcon = document.createElement('img');
         copyIcon.src = '/glyphs/copy.png';
         copyIcon.alt = '';
         copyIcon.width = 20;
         copyIcon.height = 20;
-        
         copyBtn.appendChild(copyIcon);
         actionsContainer.appendChild(copyBtn);
-        
+
         //create message content
         const messageContent = document.createElement('pre');
         messageContent.className = 'message-content';
         messageContent.textContent = plaintext;
-        
+
         //create warning message
         const warning = document.createElement('p');
         warning.className = 'warning';
         warning.textContent = 'This message has been deleted from the server and cannot be accessed again';
-        
+
         //assemble components
         messageContainer.appendChild(actionsContainer);
         messageContainer.appendChild(messageContent);

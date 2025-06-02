@@ -12,16 +12,15 @@
 </head>
 <body>
   <main id="content">
-    <div id="passphrase-wrapper" class="passphrase-wrapper">
-      <label for="passphrase">Enter passphrase:</label>
-      <div class="input-with-icon">
-        <input type="password" id="passphrase" maxlength="128" autocomplete="new-password" aria-label="Decryption passphrase"/>
+    <div id="passphrase-wrapper" class="passphrase-wrapper decrypt-row">
+      <div class="input-with-icon" style="flex: 1 1 auto;">
+        <input type="password" id="passphrase" maxlength="128" autocomplete="new-password" aria-label="Decryption passphrase" placeholder="Enter passphrase" />
         <button type="button" id="toggle-pass" aria-label="Toggle password visibility">
           <img id="eye-icon" src="/glyphs/invisible.png" alt="" width="20" height="20" />
         </button>
       </div>
       <div id="decrypt-error" role="alert"></div>
-      <button id="decrypt-btn">Decrypt Message</button>
+      <button id="decrypt-btn">Decrypt</button>
     </div>
   </main>
   <div id="status" class="message-view" role="status" aria-live="polite"></div>

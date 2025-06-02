@@ -17,14 +17,13 @@
     <textarea id="message" placeholder="Write your secret message..." maxlength="100000" spellcheck="false"></textarea>
     <div id="char-count" aria-live="polite">0 / 100000</div>
     <div class="passphrase-wrapper">
-      <div class="input-with-icon">
+      <div class="input-with-icon" style="flex: 1 1 auto;">
         <input type="password" id="passphrase" maxlength="128" autocomplete="new-password" placeholder="Leave blank for auto-generated key" />
         <button type="button" id="toggle-pass" aria-label="Toggle password visibility">
           <img id="eye-icon" src="/glyphs/invisible.png" alt="" width="20" height="20" />
         </button>
       </div>
-      <label for="expiry" style="margin-left:1em;">Message expires in:</label>
-      <select id="expiry">
+      <select id="expiry" class="expiry-inline">
         <option value="60000">1 min</option>
         <option value="180000">3 min</option>
         <option value="300000">5 min</option>

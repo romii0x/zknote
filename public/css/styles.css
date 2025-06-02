@@ -8,6 +8,7 @@ body {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  color: black;
 }
 
 main {
@@ -26,7 +27,7 @@ h1 {
 }
 
 .tagline {
-  color: #666;
+  color: #444;
   font-size: 0.95rem;
   margin-bottom: 1.5rem;
 }
@@ -47,14 +48,14 @@ textarea {
 
 textarea:focus {
   outline: none;
-  border-color: #0d6efd;
-  box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+  border-color: #888;
+  box-shadow: 0 0 0 2px #e0e0e0;
 }
 
 #char-count {
   text-align: right;
   margin-top: 0.25rem;
-  color: #555;
+  color: #333;
   font-size: 0.85rem;
 }
 
@@ -62,15 +63,20 @@ button {
   margin-top: 1rem;
   padding: 0.75rem 1.5rem;
   font-size: 1rem;
-  background-color: #0d6efd;
-  color: white;
+  background-color: #111;
+  color: #fff;
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  box-shadow: none;
+  transition: background 0.2s, box-shadow 0.2s;
 }
 
 button:hover {
-  background-color: #0b5ed7;
+  background-color: #222;
+  box-shadow: none;
 }
 
 button:disabled {
@@ -78,24 +84,55 @@ button:disabled {
   cursor: not-allowed;
 }
 
+button:focus {
+  outline: none;
+  border-color: #888;
+  box-shadow: 0 0 0 2px #e0e0e0;
+}
+
 #result {
   margin-top: 1.5rem;
   word-break: break-word;
   font-size: 0.95rem;
+  color: black;
+}
+
+/* Expiry + passphrase section */
+.form-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+.expiry-input {
+  border: 1px solid #ccc;
+  background-color: white;
+  color: black;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* optional passphrase */
-.passphrase-wrapper {
-  margin-top: 1rem;
+.passphrase-wrapper, .decrypt-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  max-width: 800px;
+  width: 100%;
   text-align: left;
-  max-width: 400px;
-  margin-left: auto;
-  margin-right: auto;
+  margin-top: 1.2rem;
 }
 
 .input-with-icon {
   position: relative;
   width: 100%;
+  flex: 1 1 auto;
 }
 
 .input-with-icon input {
@@ -105,12 +142,15 @@ button:disabled {
   border: 1px solid #ccc;
   border-radius: 8px;
   box-sizing: border-box;
+  color: black;
+  background-color: white;
+  height: 40px;
 }
 
 .input-with-icon input:focus {
   outline: none;
-  border-color: #0d6efd;
-  box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.25);
+  border-color: #888;
+  box-shadow: 0 0 0 2px #e0e0e0;
 }
 
 .input-with-icon button {
@@ -126,17 +166,28 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: center;
+  outline: none;
+  box-shadow: none;
+  height: 40px;
+  width: 40px;
 }
 
 .input-with-icon button img {
   width: 20px;
   height: 20px;
-  opacity: 0.7;
-  transition: opacity 0.2s ease;
+  filter: grayscale(40%) brightness(0.6);
+  transition: filter 0.2s ease;
+  display: block;
 }
 
 .input-with-icon button:hover img {
-  opacity: 1;
+  filter: none;
+}
+
+.input-with-icon button:focus {
+  outline: none;
+  box-shadow: none;
+  border: none;
 }
 
 /* Message view styles */
@@ -154,27 +205,45 @@ button:disabled {
 
 .message-actions {
   position: absolute;
-  right: 1rem;
-  top: 1rem;
-  z-index: 1;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  height: 32px;
+  width: auto;
+  margin-bottom: 0;
 }
 
 .message-actions .icon-button {
   background: white;
   border: 1px solid #dee2e6;
   border-radius: 4px;
-  padding: 0.25rem;
-  margin: 0;
+  padding: 0;
+  margin: 0 0.5rem 0 0;
   width: 32px;
   height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
+  vertical-align: middle;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
 }
 
-.message-actions .icon-button:hover {
-  background: #f8f9fa;
-  border-color: #ced4da;
+.message-actions .icon-button:hover,
+.message-actions .icon-button:focus {
+  background: #f1f3f5;
+  border-color: #3390ff;
+}
+
+.message-actions .icon-button img {
+  width: 20px;
+  height: 20px;
+  display: block;
+  margin: 0;
+  object-fit: contain;
 }
 
 .message-container {
@@ -196,6 +265,7 @@ button:disabled {
   line-height: 1.4;
   tab-size: 4;
   text-align: left;
+  color: black;
 }
 
 /* view.html */
@@ -211,6 +281,8 @@ button:disabled {
   font-size: 0.9em;
   margin-top: 1rem;
   text-align: center;
+  user-select: none;
+  pointer-events: none;
 }
 
 /* Responsive adjustments */
@@ -218,14 +290,83 @@ button:disabled {
   body {
     padding: 1rem;
   }
-  
+
   main {
     padding: 1rem;
   }
-  
-  textarea, .message-content {
+
+  textarea,
+  .message-content {
     padding: 0.75rem;
     font-size: 0.9rem;
   }
+
+  #decrypt-btn {
+    margin-top: 1rem;
+    width: 100%;
+  }
+  .decrypt-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
 }
 
+.expiry-inline {
+  width: 140px;
+  max-width: 140px;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+  color: #222;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  font-weight: 500;
+  margin-left: 0;
+}
+
+.expiry-inline:focus {
+  outline: none;
+  border-color: #888;
+  box-shadow: 0 0 0 2px #e0e0e0;
+}
+
+/* Remove old .expiry-controls styles if present */
+.expiry-controls, .expiry-controls label, .expiry-controls select { all: unset; }
+
+/* Softer selection color for all text */
+::selection {
+  background: #e0e0e0;
+  color: #111;
+}
+
+#decrypt-btn {
+  height: 40px;
+  margin-top: 0;
+  margin-bottom: 0;
+  align-self: center;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  background-color: #111;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  box-shadow: none;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+#decrypt-btn:hover {
+  background-color: #222;
+  box-shadow: none;
+}
+
+/* Remove message-actions styles if present */
+.message-actions { all: unset; }
