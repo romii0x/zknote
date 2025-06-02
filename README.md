@@ -1,114 +1,77 @@
 # ShoutBin
 
-**ShoutBin** is a zero-knowledge, self-destructing pastebin for encrypted messages.  
-All encryption and decryption occurs on the client side, ensuring the server never sees plaintext data.  
-Each message is linked to a unique, unguessable URL and is automatically deleted after successful decryption or expiration.
+Zero-knowledge, self-destructing pastebin service with client-side encryption.
 
-## Features
+## 🚀 Quick Start
 
-- 🔐 **End-to-End Encryption**  
-  Messages are encrypted and decrypted in the browser using AES-GCM 256.
+```bash
+# Clone the repository
+git clone https://github.com/ianshapiro1/shoutbin.git
+cd shoutbin
 
-- 💥 **Self-Destructing Messages**  
-  Messages are deleted after successful decryption or expiration.
+# Start with Docker
+docker compose up
 
-- 🧠 **Zero Knowledge**  
-  The server stores only ciphertext. Encryption keys never leave the client.
+# Or start locally
+npm install
+createdb shoutbin_dev
+psql shoutbin_dev < db/schema.sql
+npm run dev
+```
 
-## Local Development with Docker Compose
+Visit `http://localhost:3000` to start using ShoutBin.
 
-This project now supports seamless local development using Docker Compose. Both the app and a Postgres database will be started together, and the database schema will be initialized automatically.
+## 🛠 Development
 
 ### Prerequisites
-- [Docker](https://www.docker.com/get-started)
-- [Docker Compose](https://docs.docker.com/compose/)
 
-### Quick Start
-
-1. **Clone the repository:**
-   ```sh
-   git clone https://github.com/ianshapiro1/shoutbin.git
-   cd shoutbin
-   ```
-
-2. **Start the app and database:**
-   ```sh
-   docker compose up --build
-   ```
-   - The app will be available at [http://localhost:3000](http://localhost:3000)
-   - The database will persist data in a Docker-managed volume.
-   - The schema is automatically created on first run.
-
-3. **Stop the app:**
-   ```sh
-   docker compose down
-   ```
-   - To remove all data (reset the database):
-     ```sh
-     docker compose down --volumes
-     ```
+- Node.js 20+
+- PostgreSQL 15+
+- Docker and docker-compose (optional)
 
 ### Environment Variables
-- Copy `.env.example` to `.env` and adjust as needed for custom setups.
-- For local Docker Compose, no changes are needed by default.
 
-### Manual (Non-Docker) Setup
-If you want to run the app without Docker, you must:
-- Install Node.js 20+
-- Install Postgres 15+
-- Create the database and run `db/schema.sql` manually
-- Set up your `.env` file
-- Start the app with `npm install && npm start`
+```env
+# Required
+DATABASE_URL=postgres://user:password@localhost:5432/dbname
 
-## Configuration
-
-ShoutBin can be configured using environment variables:
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection URL | Required |
-| `FORCE_HTTPS` | Enforce HTTPS redirects | false |
-| `PORT` | Server port | 3000 |
-| `LOG_LEVEL` | Logging level (fatal/error/warn/info/debug/trace) | info |
-
-## Usage
-
-Start the server:
-```bash
-npm start
+# Optional with defaults
+NODE_ENV=development          # development/production/test
+PORT=3000                     # Server port
+LOG_LEVEL=info               # fatal/error/warn/info/debug/trace
+DB_SSL=false                 # Enable SSL for database
+DB_CA_CERT=                  # Path to CA cert if DB_SSL=true
 ```
 
-The application will be available at `localhost:PORT`
+### Available Scripts
 
-## Contributing
-
-Contributions are welcome! To get started:
-
-- Fork the repo and create a new branch
-- Make your changes
-- Run the tests to make sure everything passes
-- Submit a pull request with a clear description
-
-## Development
-
-### Prerequisites
-- Node.js 18+
-- PostgreSQL 12+
-
-### Running Tests
 ```bash
-npm test
+npm run dev      # Start development server with hot reload
+npm test        # Run test suite
+npm run lint    # Run ESLint
+npm run format  # Run Prettier
 ```
 
-### Security Considerations
-- Review [Security Overview](docs/SECURITY.md) before deployment
-- Configure appropriate rate limits for your environment
-- Enable HTTPS in production
+## 🔒 Security Features
 
-## 📖 Documentation
+- End-to-end encryption using AES-GCM 256
+- Zero-knowledge architecture - server never sees plaintext
+- Self-destructing messages after access or expiration
+- Strict Content Security Policy and rate limiting
+- See [Security Overview](docs/SECURITY.md) for details
 
-- [🔐 Security Overview](docs/SECURITY.md)  
-- [📋 Changelog](CHANGELOG.md)  
+## 📝 Documentation
+
+- [Security Overview](docs/SECURITY.md)
+- [Changelog](CHANGELOG.md)
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
