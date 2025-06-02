@@ -10,7 +10,7 @@ const ID_PATTERN = "^[A-Za-z0-9_-]{22}$";
 const MESSAGE_EXPIRY = 24 * 60 * 60 * 1000;
 const DELETE_TOKEN_LENGTH = 32;
 
-//rate limit configurations with more restrictive limits
+//rate limit configurations
 const createRateLimit = {
   max: 5,
   timeWindow: "1 minute",

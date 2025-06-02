@@ -1,10 +1,10 @@
-# Use official Node.js 20 image (full version for development tools)
+# official Node.js 20 image full version for dev tools
 FROM node:20
 
 # Create app directory
 WORKDIR /usr/src/app
 
-# Install dependencies with all dev dependencies included
+# Install dependencies
 COPY package*.json ./
 RUN npm install
 

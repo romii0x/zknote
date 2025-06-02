@@ -1,13 +1,13 @@
 // Initial visibility check
 const content = document.getElementById("content");
 const status = document.getElementById("status");
-const MAX_KEY_LENGTH = 512; // Maximum length for URL key parameter
+const MAX_KEY_LENGTH = 512; // Maximum length for URL key param
 
 // Hide content until we verify message exists
 content.style.display = "none";
 status.style.display = "none";
 
-// Check if message exists before showing anything
+// Check if message exists first
 (async () => {
   const id = location.pathname.split("/").pop();
   try {

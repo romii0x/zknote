@@ -14,10 +14,9 @@ global.Event = dom.window.Event;
 global.CustomEvent = dom.window.CustomEvent;
 global.Buffer = Buffer;
 
-// Jest timeout
 jest.setTimeout(10000);
 
-// Minimal env vars
+// environment variables
 process.env.NODE_ENV = "test";
 process.env.PORT = 3001;
 process.env.DATABASE_URL =

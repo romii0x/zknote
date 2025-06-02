@@ -11,7 +11,7 @@ describe("Shout API (core flow)", () => {
   beforeAll(async () => {
     fastify = Fastify();
     global.fastify = fastify;
-    // Register required plugins as in the real app
+    // Register required plugins
     await fastify.register(import("@fastify/cors"), {
       origin: "http://localhost:3000",
       methods: ["GET", "POST", "DELETE", "OPTIONS"],

@@ -1,7 +1,7 @@
 -- Drop existing tables if they exist
 DROP TABLE IF EXISTS messages;
 
--- Create messages table with enhanced security features
+-- Create messages table
 CREATE TABLE messages (
     id VARCHAR(22) PRIMARY KEY CHECK (id ~ '^[A-Za-z0-9_-]{22}$'),
     message TEXT NOT NULL CHECK (LENGTH(message) <= 140000),

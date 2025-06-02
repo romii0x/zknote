@@ -19,7 +19,7 @@ export async function setupDatabase(fastify) {
   });
 }
 
-//legacy query helper with improved error handling
+//legacy pg query helper 
 export async function query(text, params) {
   const client = await global.fastify.pg.pool.connect();
   try {
