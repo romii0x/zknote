@@ -60,6 +60,8 @@
 - created a development build container using docker compose
 - messages can now be up to 100k characters
 - fixed how ssl is handled with environment variables
+- ui/ux overhaul
+- added message timeout selection
 
 ## TODO:
 - rework expiration time logic; currently hardcoded to 24hrs

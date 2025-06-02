@@ -13,6 +13,9 @@ ShoutBin is designed with a strong focus on privacy, anonymity, and zero-knowled
 - Decryption key appended to URL fragment (#k=...), never sent to server
 - Each message uses a fresh, random 96-bit IV via `crypto.getRandomValues()`
 - Optional passphrase mode with PBKDF2 (100,000 iterations, SHA-256) and 128-bit salt
+- Memory cleanup after encryption/decryption operations
+- Sensitive data zeroing in memory after use
+- Auto-hiding of visible passwords after 30 seconds
 
 #### ✅ XSS Prevention
 - All DOM manipulation uses safe methods (`textContent`, `createElement`)
@@ -28,13 +31,14 @@ ShoutBin is designed with a strong focus on privacy, anonymity, and zero-knowled
 - Authenticated delete tokens prevent unauthorized deletions
 - No IP addresses or identifiers stored
 - Messages are ephemeral and auto-delete after access
+- Strict message size limits enforced
 
 #### ✅ Rate Limiting & Abuse Prevention
 - Global rate limiting with IP-based tracking
 - Automatic IP banning for repeated violations
 - Endpoint-specific limits:
-  - Message creation: 10 requests/minute
-  - Message reading: 30 requests/minute
+  - Message creation: 5 requests/minute
+  - Message reading: 20 requests/minute
 - Ban duration: 1 hour after 3 violations
 
 #### ✅ Resource Protection
@@ -70,11 +74,18 @@ ShoutBin is designed with a strong focus on privacy, anonymity, and zero-knowled
 - Visual feedback for security-critical actions
 - Progressive error messages without information leakage
 - Rate limit feedback with remaining attempts
+- Automatic password visibility timeout
+- Memory cleanup after sensitive operations
 
 ## 🔧 Planned / In Progress
 
 ### 🔧 Additional Security
-- Security audits and penetration testing
+- Browser memory barriers using SharedArrayBuffer
+- Protection against browser developer tools manipulation
+- Secure clipboard implementation with auto-clear
+- Session timeout for decryption page
+- Warning before page unload with sensitive data
+- Enhanced error handling and logging
 - Client-side integrity checks (SRI)
 - True exponential backoff for rate limiting
 - Enhanced abuse monitoring and prevention
@@ -83,5 +94,7 @@ ShoutBin is designed with a strong focus on privacy, anonymity, and zero-knowled
 ### 🔧 UX Security Improvements
 - Disable decrypt button during operations
 - Add loading states for cryptographic operations
-- password strength indicators
+- Password strength indicators
 - Add secure auto-clear timeouts for messages
+- Improved error messages without leaking information
+- Enhanced logging of encryption/decryption failures
