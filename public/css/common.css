@@ -1,0 +1,186 @@
+/* General body and layout */
+body {
+  font-family: system-ui, sans-serif;
+  margin: 0;
+  padding: 0; /* Default padding, can be overridden by media query */
+  background: #f8f9fa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  color: black;
+}
+
+main {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 2rem; /* Default padding, can be overridden by media query */
+  width: 90%;
+  max-width: 800px;
+  text-align: center;
+}
+
+h1 {
+  margin-top: 0;
+  font-size: 2rem;
+}
+
+/* Generic button styles */
+button {
+  margin-top: 1rem; /* Default, can be overridden */
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  background-color: #111;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  box-shadow: none;
+  transition:
+    background 0.2s,
+    box-shadow 0.2s;
+}
+
+button:hover {
+  background-color: #222;
+  box-shadow: none;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+button:focus {
+  outline: none;
+  border-color: #888; /* For accessibility, ensure visible focus */
+  box-shadow: 0 0 0 2px #e0e0e0;
+}
+
+/* Passphrase input sections (common for app and view) */
+.passphrase-wrapper,
+.decrypt-row { /* .decrypt-row is used in view.html but shares structure */
+  display: flex;
+  flex-direction: row; /* Default, can be overridden by media query */
+  align-items: center; /* Default, can be overridden by media query */
+  gap: 1rem; /* Default, can be overridden by media query */
+  max-width: 800px;
+  width: 100%;
+  text-align: left;
+  margin-top: 1.2rem;
+}
+
+.input-with-icon {
+  position: relative;
+  width: 100%; /* Default, might be adjusted if not flex-grow */
+  flex: 1 1 auto; /* Allows input to grow and shrink */
+}
+
+.input-with-icon input {
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 1rem; /* Right padding for icon */
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+  color: black;
+  background-color: white;
+  height: 40px; /* Fixed height for alignment */
+}
+
+.input-with-icon input:focus {
+  outline: none;
+  border-color: #888;
+  box-shadow: 0 0 0 2px #e0e0e0;
+}
+
+.input-with-icon button { /* Style for toggle visibility button */
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0.5rem;
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: none;
+  box-shadow: none;
+  height: 40px; /* Match input height */
+  width: 40px;  /* Fixed width for the button */
+}
+
+.input-with-icon button img {
+  width: 20px;
+  height: 20px;
+  filter: grayscale(40%) brightness(0.6);
+  transition: filter 0.2s ease;
+  display: block;
+}
+
+.input-with-icon button:hover img {
+  filter: none;
+}
+
+.input-with-icon button:focus { /* Remove extra focus, main button:focus handles it */
+  outline: none;
+  box-shadow: none;
+  border: none;
+}
+
+
+/* Common error/warning styling */
+#decrypt-error { /* Used in view.html, but potentially common for errors */
+  font-size: 0.9em;
+  color: #dc3545; /* Bootstrap danger color */
+  margin-top: 0.5rem;
+  text-align: center; /* Or left if preferred in context */
+  flex-basis: 100%; /* Make it take full width if in a flex column */
+}
+
+.warning { /* General warning class */
+  color: #dc3545;
+  font-size: 0.9em;
+  margin-top: 1rem;
+  text-align: center;
+  user-select: none; /* Warnings are typically not selectable */
+  pointer-events: none; /* And not interactive */
+}
+
+/* Softer selection color for all text */
+::selection {
+  background: #e0e0e0; /* Light grey background */
+  color: #111; /* Dark text for contrast */
+}
+
+/* Responsive adjustments - common base */
+@media (max-width: 600px) {
+  body {
+    padding: 1rem; /* Add some padding on small screens */
+  }
+
+  main {
+    padding: 1rem; /* Reduce padding in main on small screens */
+    width: calc(100% - 2rem); /* Adjust width considering body padding */
+  }
+
+  /* Common responsive behavior for passphrase/decrypt rows */
+  .passphrase-wrapper, /* Apply to app.html */
+  .decrypt-row {       /* Apply to view.html */
+    flex-direction: column;
+    align-items: stretch; /* Make children take full width */
+    gap: 0.5rem; /* Reduce gap for column layout */
+  }
+
+  .input-with-icon {
+     /* Ensure it still takes available space if flex settings change in specific files */
+    flex-basis: auto;
+  }
+} 

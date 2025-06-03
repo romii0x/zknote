@@ -1,0 +1,111 @@
+/* view.html specific styles */
+
+.message-view {
+  margin: 2rem auto;
+  width: 100%;
+  max-width: 800px;
+}
+
+.message-container {
+  position: relative;
+  margin-top: 1rem;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  background: #f8f9fa;
+}
+
+.message-content {
+  padding: 1rem;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  font-family: "Consolas", "Monaco", monospace;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  tab-size: 4;
+  text-align: left;
+  color: black;
+}
+
+#status {
+  margin-top: 1rem;
+  word-break: break-word;
+  font-size: 1rem;
+}
+
+
+#decrypt-btn {
+  height: 40px; 
+  margin-top: 0;
+  margin-bottom: 0;
+  align-self: center;
+}
+
+#decrypt-btn:hover {
+  background-color: #222;
+  box-shadow: none;
+}
+
+.message-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.message-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.message-actions .icon-button {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 6px;
+  padding: 0;
+  margin: 0;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background 0.2s,
+    border-color 0.2s;
+  color: #333;
+}
+
+.message-actions .icon-button:hover,
+.message-actions .icon-button:focus {
+  background: #f1f3f5;
+  border-color: #888;
+  outline: none;
+  box-shadow: 0 0 0 2px #e0e0e0;
+}
+
+.message-actions .icon-button img {
+  width: 18px;
+  height: 18px;
+  display: block;
+  object-fit: contain;
+  filter: grayscale(20%) brightness(0.5);
+}
+.message-actions .icon-button:hover img {
+    filter: none;
+}
+
+
+@media (max-width: 600px) {
+  .message-content {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+
+  #decrypt-btn {
+    margin-top: 1rem;
+    width: 100%; 
+  }
+} 

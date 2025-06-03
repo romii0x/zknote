@@ -1,0 +1,135 @@
+/* app.html specific styles */
+.tagline {
+  color: #444;
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+}
+
+textarea {
+  width: 100%;
+  height: 250px;
+  font-size: 1rem;
+  padding: 1rem;
+  resize: vertical;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-family: "Consolas", "Monaco", monospace;
+  line-height: 1.4;
+  tab-size: 4;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #888;
+  box-shadow: 0 0 0 2px #e0e0e0;
+}
+
+#char-count {
+  text-align: right;
+  margin-top: 0.25rem;
+  color: #333;
+  font-size: 0.85rem;
+}
+
+#result { /* For link/message generated */
+  margin-top: 1.5rem;
+  word-break: break-word;
+  font-size: 0.95rem;
+  color: black;
+  background-color: #f8f9fa; /* Slight background for emphasis */
+  padding: 0.75rem;
+  border-radius: 6px;
+  border: 1px solid #eee;
+}
+
+/* Expiry + passphrase section (from original styles.css) */
+/* .form-controls was present but not used in HTML, keeping it commented for now */
+/*
+.form-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+*/
+
+/* .expiry-input was present but not used in HTML (select id="expiry" is used), keeping it commented */
+/*
+.expiry-input {
+  border: 1px solid #ccc;
+  background-color: white;
+  color: black;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+*/
+
+.expiry-inline { /* Styles for the select dropdown */
+  padding: 0.75rem 1rem; /* Match input field padding */
+  font-size: 1rem; /* Match input field font size */
+  border: 1px solid #ccc;
+  border-radius: 8px; /* Match input field border-radius */
+  background: #fff url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23333333' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e") no-repeat right 0.75rem center/16px 12px; /* Custom arrow */
+  color: #222;
+  box-sizing: border-box;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  font-weight: 500;
+  margin-left: 0; /* Removed from original, as gap in .passphrase-wrapper handles spacing */
+  /* width: 140px; /* Let flexbox determine width or set a min/max width */
+  min-width: 120px; /* Ensure it's not too small */
+  flex-shrink: 0; /* Prevent shrinking if passphrase input is long */
+}
+
+.expiry-inline:focus {
+  outline: none;
+  border-color: #888;
+  box-shadow: 0 0 0 2px #e0e0e0;
+}
+
+/* The 'all: unset' for .expiry-controls is tricky.
+   If .expiry-controls was a wrapper that's no longer used, this CSS is fine.
+   If app.html had <div class="expiry-controls">...</div> then those styles are gone.
+   Based on app.html, it's not used.
+*/
+/*
+.expiry-controls,
+.expiry-controls label,
+.expiry-controls select {
+  all: unset;
+}
+*/
+
+#send { /* Send button specific style if any */
+  /* Currently inherits all styles from common button */
+  /* If specific width/margin needed for app page: */
+  /* width: 100%; */ /* Example */
+}
+
+
+/* Responsive adjustments for app.html */
+@media (max-width: 600px) {
+  textarea {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+    height: 200px; /* Adjust height for smaller screens */
+  }
+
+  .expiry-inline {
+    width: 100%; /* Make dropdown full width in column layout */
+    margin-left: 0; /* Ensure no margin if it was there */
+  }
+
+  #send {
+    width: 100%; /* Make send button full width */
+  }
+} 
