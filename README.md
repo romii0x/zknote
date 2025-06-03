@@ -10,7 +10,8 @@ git clone https://github.com/ianshapiro1/shoutbin.git
 cd shoutbin
 
 # Start with Docker
-docker compose up
+docker-compose build 
+docker-compose up
 
 # Or start locally
 npm install
