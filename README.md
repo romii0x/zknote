@@ -2,7 +2,7 @@
 
 Zero-knowledge, self-destructing pastebin service with client-side encryption.
 
-## 🚀 Quick Start
+## Setup
 
 ```bash
 # Clone the repository
@@ -22,7 +22,7 @@ npm run dev
 
 Visit `http://localhost:3000` to start using ShoutBin.
 
-## 🛠 Development
+## Development
 
 ### Prerequisites
 
@@ -52,7 +52,7 @@ npm test        # Run test suite
 npm run format  # Run Prettier
 ```
 
-## 🔒 Security Features
+## Security Features
 
 - End-to-end encryption using AES-GCM 256
 - Zero-knowledge architecture - server never sees plaintext
@@ -60,12 +60,12 @@ npm run format  # Run Prettier
 - Strict Content Security Policy and rate limiting
 - See [Security Overview](docs/SECURITY.md) for details
 
-## 📝 Documentation
+## Documentation
 
 - [Security Overview](docs/SECURITY.md)
 - [Changelog](CHANGELOG.md)
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/your-feature`)
