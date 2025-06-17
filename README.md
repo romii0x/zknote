@@ -2,6 +2,15 @@
 
 Zero-knowledge, self-destructing pastebin service with client-side encryption.
 
+## Features
+
+- End-to-end encryption using AES-GCM 256
+- Zero-knowledge architecture - server never sees plaintext
+- Messages are deleted on successful decryption
+- Message lifetime of up to 1 week
+- Support up to 100000 characters per message
+- Optional Passphrases
+
 ## Setup
 
 ```bash
@@ -19,8 +28,6 @@ createdb shoutbin_dev
 psql shoutbin_dev < db/schema.sql
 npm run dev
 ```
-
-Visit `http://localhost:3000` to start using ShoutBin.
 
 ## Development
 
@@ -52,14 +59,6 @@ npm test        # Run test suite
 npm run format  # Run Prettier
 ```
 
-## Security Features
-
-- End-to-end encryption using AES-GCM 256
-- Zero-knowledge architecture - server never sees plaintext
-- Self-destructing messages after access or expiration
-- Strict Content Security Policy and rate limiting
-- See [Security Overview](docs/SECURITY.md) for details
-
 ## Documentation
 
 - [Security Overview](docs/SECURITY.md)
@@ -67,11 +66,8 @@ npm run format  # Run Prettier
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/your-feature`)
-3. Commit your changes (`git commit -m 'Feature description'`)
-4. Push to the branch (`git push origin feature/your-feature`)
-5. Open a Pull Request
+Contributions are welcome. If you have any additions or changes, open a PR!  
+If you have an idea for a feature or encouter an error, please open an issue.
 
 ## License
 
