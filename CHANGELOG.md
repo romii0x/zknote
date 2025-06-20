@@ -75,6 +75,5 @@
 - formatted codebase with prettier
 - cleanup up comments around the app
 
-## TODO:
-
-- rework expiration time logic; currently hardcoded to 24hrs
+**2025-06-20**
+- removed legacy query helper
