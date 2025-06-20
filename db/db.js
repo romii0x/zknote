@@ -17,18 +17,4 @@ export async function setupDatabase(fastify) {
       connectionTimeoutMillis: 2000,
     },
   });
-}
-
-//legacy pg query helper 
-export async function query(text, params) {
-  const client = await global.fastify.pg.pool.connect();
-  try {
-    const res = await client.query(text, params);
-    return res;
-  } catch (err) {
-    fastify.log.error({ err, query: text }, "Database query error");
-    throw err;
-  } finally {
-    client.release();
-  }
-}
+};

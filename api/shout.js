@@ -1,6 +1,5 @@
 import { randomUUID, timingSafeEqual } from "crypto";
 import { Buffer } from "buffer";
-import { query } from "../db/db.js";
 
 const MAX_MESSAGE_SIZE = 140000;
 const MIN_MESSAGE_SIZE = 1;
@@ -38,7 +37,7 @@ function uuidToBase64url(uuid) {
 
 async function secureDelete(fastify, id, deleteToken) {
   try {
-    const result = await query(
+    const result = await fastify.pg.query(
       `DELETE FROM messages WHERE id = $1 AND delete_token = $2 RETURNING id`,
       [id, deleteToken],
     );
@@ -121,7 +120,7 @@ export default async function shoutPlugin(fastify) {
           Date.now() +
           (allowedExpiries.includes(expiry) ? expiry : MESSAGE_EXPIRY);
 
-        await query(
+        await fastify.pg.query(
           `INSERT INTO messages (id, message, iv, salt, delete_token, expires) 
                  VALUES ($1, $2, $3, $4, $5, $6)`,
           [id, message, iv, salt || null, deleteToken, expires],
@@ -185,7 +184,7 @@ export default async function shoutPlugin(fastify) {
       const { id } = request.params;
 
       try {
-        const res = await query(
+        const res = await fastify.pg.query(
           `SELECT message, iv, salt, expires, delete_token FROM messages WHERE id = $1`,
           [id],
         );
