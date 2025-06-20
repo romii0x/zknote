@@ -57,17 +57,17 @@ button:disabled {
 
 button:focus {
   outline: none;
-  border-color: #888; /* For accessibility, ensure visible focus */
+  border-color: #888; 
   box-shadow: 0 0 0 2px #e0e0e0;
 }
 
-/* Passphrase input sections (common for app and view) */
+/* Passphrase input sections */
 .passphrase-wrapper,
-.decrypt-row { /* .decrypt-row is used in view.html but shares structure */
+.decrypt-row { 
   display: flex;
-  flex-direction: row; /* Default, can be overridden by media query */
-  align-items: center; /* Default, can be overridden by media query */
-  gap: 1rem; /* Default, can be overridden by media query */
+  flex-direction: row; 
+  align-items: center; 
+  gap: 1rem; 
   max-width: 800px;
   width: 100%;
   text-align: left;
@@ -76,20 +76,20 @@ button:focus {
 
 .input-with-icon {
   position: relative;
-  width: 100%; /* Default, might be adjusted if not flex-grow */
-  flex: 1 1 auto; /* Allows input to grow and shrink */
+  width: 100%; 
+  flex: 1 1 auto; 
 }
 
 .input-with-icon input {
   width: 100%;
-  padding: 0.75rem 2.5rem 0.75rem 1rem; /* Right padding for icon */
+  padding: 0.75rem 2.5rem 0.75rem 1rem; 
   font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 8px;
   box-sizing: border-box;
   color: black;
   background-color: white;
-  height: 40px; /* Fixed height for alignment */
+  height: 40px; 
 }
 
 .input-with-icon input:focus {
@@ -113,8 +113,8 @@ button:focus {
   justify-content: center;
   outline: none;
   box-shadow: none;
-  height: 40px; /* Match input height */
-  width: 40px;  /* Fixed width for the button */
+  height: 40px; 
+  width: 40px;  
 }
 
 .input-with-icon button img {
@@ -129,20 +129,10 @@ button:focus {
   filter: none;
 }
 
-.input-with-icon button:focus { /* Remove extra focus, main button:focus handles it */
+.input-with-icon button:focus {
   outline: none;
   box-shadow: none;
   border: none;
-}
-
-
-/* Common error/warning styling */
-#decrypt-error { /* Used in view.html, but potentially common for errors */
-  font-size: 0.9em;
-  color: #dc3545; /* Bootstrap danger color */
-  margin-top: 0.5rem;
-  text-align: center; /* Or left if preferred in context */
-  flex-basis: 100%; /* Make it take full width if in a flex column */
 }
 
 .warning { /* General warning class */
@@ -150,37 +140,36 @@ button:focus {
   font-size: 0.9em;
   margin-top: 1rem;
   text-align: center;
-  user-select: none; /* Warnings are typically not selectable */
-  pointer-events: none; /* And not interactive */
+  user-select: none; 
+  pointer-events: none; 
 }
 
 /* Softer selection color for all text */
 ::selection {
-  background: #e0e0e0; /* Light grey background */
-  color: #111; /* Dark text for contrast */
+  background: #e0e0e0; 
+  color: #111; 
 }
 
 /* Responsive adjustments - common base */
 @media (max-width: 600px) {
   body {
-    padding: 1rem; /* Add some padding on small screens */
+    padding: 1rem; 
   }
 
   main {
-    padding: 1rem; /* Reduce padding in main on small screens */
-    width: calc(100% - 2rem); /* Adjust width considering body padding */
+    padding: 1rem;
+    width: calc(100% - 2rem);
   }
 
   /* Common responsive behavior for passphrase/decrypt rows */
-  .passphrase-wrapper, /* Apply to app.html */
-  .decrypt-row {       /* Apply to view.html */
+  .passphrase-wrapper, 
+  .decrypt-row {
     flex-direction: column;
-    align-items: stretch; /* Make children take full width */
-    gap: 0.5rem; /* Reduce gap for column layout */
+    align-items: stretch;
+    gap: 0.5rem;
   }
 
   .input-with-icon {
-     /* Ensure it still takes available space if flex settings change in specific files */
     flex-basis: auto;
   }
 } 

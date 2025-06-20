@@ -26,6 +26,13 @@ status.style.display = "none";
 async function initializeView(data) {
   const errorBox = document.getElementById("decrypt-error");
 
+  //decrypt with enter button
+  document.getElementById("passphrase").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      document.getElementById("decrypt-btn").click();
+    }
+  });
+
   //passphrase glyph handler
   document.getElementById("toggle-pass").addEventListener("click", () => {
     const passInput = document.getElementById("passphrase");

@@ -4,9 +4,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const result = document.getElementById("result");
   const charCount = document.getElementById("char-count");
 
-  // Update char count on load (for autofill/session restore)
-  charCount.textContent = `${textarea.value.length} / 100000`;
-
+  window.addEventListener("load", () => {
+    //clear text
+    const input = document.querySelector("textarea#message");
+    if (input) input.value = "";
+  });
+  
   //check webcrypto support
   if (window.crypto?.subtle) {
     sendBtn.disabled = false;
@@ -49,6 +52,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const passphrase = document.getElementById("passphrase").value.trim();
     const expiry = parseInt(document.getElementById("expiry").value, 10);
 
+    //hide link box
+    result.style.display = "none";
+
     if (!message) {
       result.textContent = "Message cannot be empty.";
       return;
@@ -88,18 +94,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const data = await response.json();
 
+      //display link box
+      result.style.display = "block";
+
       //clear previous result
       while (result.firstChild) {
         result.firstChild.remove();
       }
 
       if (passphrase) {
-        const text = document.createTextNode(
-          "🔐 Message sent. Share this link and passphrase separately: ",
-        );
-        result.appendChild(text);
-        result.appendChild(document.createElement("br"));
-
         const link = document.createElement("a");
         link.href = `${location.origin}${data.url}`;
         link.target = "_blank";
@@ -107,9 +110,6 @@ document.addEventListener("DOMContentLoaded", () => {
         result.appendChild(link);
       } else {
         const fullUrl = `${location.origin}${data.url}#k=${encodeURIComponent(key)}`;
-        const text = document.createTextNode("🔗 Your secret link: ");
-        result.appendChild(text);
-
         const link = document.createElement("a");
         link.href = fullUrl;
         link.target = "_blank";

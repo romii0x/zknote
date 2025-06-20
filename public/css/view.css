@@ -42,6 +42,14 @@
   align-self: center;
 }
 
+#decrypt-error { 
+  font-size: 0.9em;
+  color: #dc3545;
+  margin-top: 0.5rem;
+  text-align: center;
+  flex-basis: 100%;
+}
+
 #decrypt-btn:hover {
   background-color: #222;
   box-shadow: none;
