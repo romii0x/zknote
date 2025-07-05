@@ -46,18 +46,18 @@ describe("Client-side Encryption", () => {
     const key = await window.crypto.subtle.generateKey();
     const encrypted = await window.crypto.subtle.encrypt({}, key, data);
     // Simulate sending to server
-    await window.fetch("/api/shout", { method: "POST", body: encrypted });
+            await window.fetch("/api/note", { method: "POST", body: encrypted });
     // Simulate decrypt (client-side)
     const decrypted = await window.crypto.subtle.decrypt({}, key, encrypted);
     const decoded = new window.TextDecoder().decode(decrypted);
     expect(decoded).toBe("decrypted");
     // Assert plaintext never sent to server
     expect(window.fetch).toHaveBeenCalledWith(
-      "/api/shout",
+      "/api/note",
       expect.objectContaining({ body: encrypted }),
     );
     expect(window.fetch).not.toHaveBeenCalledWith(
-      "/api/shout",
+      "/api/note",
       expect.objectContaining({ body: message }),
     );
   });

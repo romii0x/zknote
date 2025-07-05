@@ -1,4 +1,4 @@
-#### [< Back to Repo Page](https://github.com/ianshapiro1/shoutbin)
+#### [< Back to Repo Page](https://github.com/ianshapiro1/zknote)
 
 ## Development Log
 
@@ -30,7 +30,7 @@
 
 - added expired message clean up job
 - fixed error handling and improved delete upon access logic
-  - shouts now attempt to delete upon access and completed decryption
+  - notes now attempt to delete upon access and completed decryption
 - separated README into multiple documentation files and created changelog
 - added optional passphrase for encryption
 
@@ -39,7 +39,7 @@
 - added static view page for message viewing
 - reworked encryption/ecryption logic to work with served file
   - reimplemented delete upon decryption after security review
-  - server now returns json for /shout/:id/data endpoint intead of embedded script
+  - server now returns json for /note/:id/data endpoint instead of embedded script
 - ui improvements, glyphs for visible/invisible passphrases
 - added folders for js and css files
 - minor security fixes

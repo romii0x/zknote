@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (salt) body.salt = salt;
 
-      const response = await fetch("/api/shout", {
+      const response = await fetch("/api/note", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),

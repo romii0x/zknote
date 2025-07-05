@@ -1,8 +1,8 @@
-#### [< Back to Repo Page](https://github.com/ianshapiro1/shoutbin)
+#### [< Back to Repo Page](https://github.com/ianshapiro1/zknote)
 
 # Security
 
-ShoutBin is designed with a strong focus on privacy, anonymity, and zero-knowledge architecture. Below is a breakdown of its implemented and planned security features.
+zknote is designed with a strong focus on privacy, anonymity, and zero-knowledge architecture. Below is a breakdown of its implemented and planned security features.
 
 ## Implemented
 

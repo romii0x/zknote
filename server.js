@@ -9,7 +9,7 @@ import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import cron from "node-cron";
 
-import shoutPlugin from "./api/shout.js";
+import notePlugin from "./api/note.js";
 import { deleteExpiredMessages } from "./jobs/cleanup.js";
 import { setupDatabase } from "./db/db.js";
 
@@ -127,7 +127,7 @@ await fastify.register(rateLimit, {
 });
 
 //register routes and plugins
-fastify.register(shoutPlugin);
+fastify.register(notePlugin);
 
 fastify.get("/", (req, reply) => {
   reply.sendFile("app.html");
@@ -197,5 +197,5 @@ fastify.listen({ port, host: "0.0.0.0" }, (err, address) => {
     fastify.log.error(err);
     process.exit(1);
   }
-  console.log(`🚀 ShoutBin running at ${address}`);
+  console.log(`🚀 zknote running at ${address}`);
 });

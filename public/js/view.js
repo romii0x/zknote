@@ -11,7 +11,7 @@ status.style.display = "none";
 (async () => {
   const id = location.pathname.split("/").pop();
   try {
-    const res = await fetch(`/api/shout/${id}/data`);
+    const res = await fetch(`/api/note/${id}/data`);
     if (!res.ok) {
       location.replace("/404.html");
       return;
@@ -44,7 +44,7 @@ async function initializeView(data) {
     eyeIcon.alt = isHidden ? "Hide" : "Show";
   });
 
-  //inject shout data into view.html
+  //inject note data into view.html
   const container = document.createElement("div");
   container.id = "data";
   container.dataset.message = data.message;
@@ -187,7 +187,7 @@ async function decryptMessage(passphrase) {
 
     //delete the message after successful decryption
     try {
-      const deleteResponse = await fetch(`/api/shout/${messageId}`, {
+      const deleteResponse = await fetch(`/api/note/${messageId}`, {
         method: "DELETE",
         headers: {
           "x-delete-token": deleteToken,
@@ -195,8 +195,8 @@ async function decryptMessage(passphrase) {
       });
       if (!deleteResponse.ok) {
         const errorText = await deleteResponse.text();
-        console.error("Failed to delete message:", errorText);
-        throw new Error("Failed to delete message: " + errorText);
+        console.error("Failed to delete note:", errorText);
+        throw new Error("Failed to delete note: " + errorText);
       }
     } catch (deleteErr) {
       console.error("Error deleting message:", deleteErr);

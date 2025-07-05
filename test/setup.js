@@ -20,7 +20,7 @@ jest.setTimeout(10000);
 process.env.NODE_ENV = "test";
 process.env.PORT = 3001;
 process.env.DATABASE_URL =
-  "postgres://postgres:postgres@localhost:5432/shoutbin_test";
+  "postgres://postgres:postgres@localhost:5432/zknote_test";
 process.env.LOG_LEVEL = "error";
 
 // Minimal crypto/fetch mocks if not present

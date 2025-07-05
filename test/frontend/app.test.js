@@ -32,7 +32,7 @@ describe("Frontend App (create message)", () => {
       .fn()
       .mockResolvedValue({
         ok: true,
-        json: async () => ({ url: "/shout/test-id" }),
+        json: async () => ({ url: "/note/test-id" }),
       });
   });
   test("encrypts and sends message", async () => {
@@ -44,9 +44,9 @@ describe("Frontend App (create message)", () => {
     const key = await window.crypto.subtle.generateKey();
     const encrypted = await window.crypto.subtle.encrypt({}, key, data);
     // Simulate sending to server
-    await window.fetch("/api/shout", { method: "POST", body: encrypted });
+          await window.fetch("/api/note", { method: "POST", body: encrypted });
     expect(window.fetch).toHaveBeenCalledWith(
-      "/api/shout",
+              "/api/note",
       expect.objectContaining({ body: encrypted }),
     );
   });

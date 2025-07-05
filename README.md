@@ -1,6 +1,6 @@
-# ShoutBin
+# zknote
 
-Zero-knowledge, self-destructing pastebin service with client-side encryption.
+Zero-knowledge, self-destructing note service with client-side encryption.
 
 ## Features
 
@@ -15,8 +15,8 @@ Zero-knowledge, self-destructing pastebin service with client-side encryption.
 
 ```bash
 # Clone the repository
-git clone https://github.com/ianshapiro1/shoutbin.git
-cd shoutbin
+git clone https://github.com/ianshapiro1/zknote.git
+cd zknote
 
 # Start with Docker
 docker-compose build 
@@ -24,8 +24,8 @@ docker-compose up
 
 # Or start locally
 npm install
-createdb shoutbin_dev
-psql shoutbin_dev < db/schema.sql
+createdb zknote_dev
+psql zknote_dev < db/schema.sql
 npm run dev
 ```
 

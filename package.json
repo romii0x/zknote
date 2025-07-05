@@ -1,8 +1,8 @@
 {
   "type": "module",
-  "name": "shoutbin",
+  "name": "zknote",
   "version": "1.0.0",
-  "description": "Zero-knowledge, self-destructing pastebin",
+  "description": "Zero-knowledge, self-destructing note service",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -17,10 +17,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ianshapiro1/shoutbin.git"
+    "url": "git+https://github.com/ianshapiro1/zknote.git"
   },
   "keywords": [
-    "pastebin",
+    "note",
     "encryption",
     "zero-knowledge",
     "security",
@@ -30,9 +30,9 @@
   "author": "https://github.com/ianshapiro1",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/ianshapiro1/shoutbin/issues"
+    "url": "https://github.com/ianshapiro1/zknote/issues"
   },
-  "homepage": "https://github.com/ianshapiro1/shoutbin#readme",
+      "homepage": "https://github.com/ianshapiro1/zknote#readme",
   "dependencies": {
     "@fastify/cors": "^8.3.0",
     "@fastify/helmet": "^11.0.0",
