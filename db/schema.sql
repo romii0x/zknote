@@ -1,22 +1,20 @@
--- Drop existing tables if they exist
-DROP TABLE IF EXISTS messages;
+-- Drop existing tables
+DROP TABLE IF EXISTS notes;
 
--- Create messages table
-CREATE TABLE messages (
-    id VARCHAR(22) PRIMARY KEY CHECK (id ~ '^[A-Za-z0-9_-]{22}$'),
-    message TEXT NOT NULL CHECK (LENGTH(message) <= 140000),
-    iv VARCHAR(24) NOT NULL,
-    salt VARCHAR(64) CHECK (salt IS NULL OR salt ~ '^[A-Za-z0-9_-]{16,64}$'),
-    delete_token VARCHAR(32) NOT NULL,
-    expires BIGINT NOT NULL CHECK (expires > EXTRACT(EPOCH FROM NOW() AT TIME ZONE 'UTC') * 1000),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT message_not_empty CHECK (LENGTH(message) > 0)
+-- Create notes table
+CREATE TABLE notes (
+    id TEXT PRIMARY KEY CHECK (length(id) = 22 AND id REGEXP '^[A-Za-z0-9_-]{22}$'),
+    message TEXT NOT NULL CHECK (length(message) > 0 AND length(message) <= 140000),
+    iv TEXT NOT NULL CHECK (iv REGEXP '^[A-Za-z0-9_-]{16,24}$'),
+    salt TEXT CHECK (salt IS NULL OR salt REGEXP '^[A-Za-z0-9_-]{16,64}$'),
+    delete_token TEXT NOT NULL CHECK (length(delete_token) = 32),
+    expires_at TEXT NOT NULL CHECK (datetime(expires_at) > datetime('now')),
+    created_at TEXT DEFAULT (datetime('now')),
+    auth_tag TEXT NOT NULL CHECK (length(auth_tag) > 0)
 );
 
 -- Create index for message expiration cleanup
-CREATE INDEX idx_messages_expires ON messages (expires);
+CREATE INDEX IF NOT EXISTS idx_notes_expires_at ON notes(expires_at);
 
--- Grant minimal required permissions
-REVOKE ALL ON ALL TABLES IN SCHEMA public FROM PUBLIC;
-GRANT SELECT, INSERT, DELETE ON messages TO postgres;
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO postgres; 
+-- Create index for note ID lookups
+CREATE INDEX IF NOT EXISTS idx_notes_id ON notes(id);
