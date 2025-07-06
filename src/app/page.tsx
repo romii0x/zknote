@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import QRCode from 'qrcode';
 
 function generatePassphrase(length = 32) {
   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -114,6 +115,9 @@ export default function Home() {
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [showPassphraseInResult, setShowPassphraseInResult] = useState(false);
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
+  const [showQrCode, setShowQrCode] = useState(false);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -190,6 +194,24 @@ export default function Home() {
       setTimeout(() => setCopied(false), 1000);
     } catch (err) {
       console.error('Failed to copy to clipboard:', err);
+    }
+  };
+
+  const generateQRCode = async () => {
+    if (!shareUrl) return;
+    try {
+      const dataUrl = await QRCode.toDataURL(shareUrl, {
+        width: 256,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+      setQrCodeDataUrl(dataUrl);
+      setShowQrCode(true);
+    } catch (err) {
+      console.error('Failed to generate QR code:', err);
     }
   };
 
@@ -318,13 +340,54 @@ export default function Home() {
                     )}
                   </button>
                 </div>
+                
+                {showQrCode && qrCodeDataUrl && (
+                  <div className="flex flex-col items-center gap-2 p-4 bg-input border border-border rounded-lg">
+                    <img src={qrCodeDataUrl} alt="QR Code" className="w-48 h-48" />
+                  </div>
+                )}
+                
                 {passphrase.trim() && (
                   <div className="text-xs text-text-secondary">
-                    <span className="font-semibold">Passphrase:</span> <span className="font-mono">{passphrase}</span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold">Passphrase:</span>
+                        {showPassphraseInResult ? (
+                          <span className="font-mono">{passphrase}</span>
+                        ) : (
+                          <span className="font-mono">••••••••</span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setShowPassphraseInResult(!showPassphraseInResult)}
+                          className="text-xs underline hover:no-underline"
+                        >
+                          {showPassphraseInResult ? 'Hide' : 'Show'}
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={generateQRCode}
+                        className="text-xs underline hover:no-underline"
+                      >
+                        QR Code
+                      </button>
+                    </div>
                   </div>
                 )}
                 <div className="text-xs text-text-secondary">
-                  <span className="font-semibold">Expires:</span> {expiresAt && new Date(expiresAt).toLocaleString()}
+                  <div className="flex items-center justify-between">
+                    <span><span className="font-semibold">Expires:</span> {expiresAt && new Date(expiresAt).toLocaleString()}</span>
+                    {!passphrase.trim() && (
+                      <button
+                        type="button"
+                        onClick={generateQRCode}
+                        className="text-xs underline hover:no-underline"
+                      >
+                        QR Code
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -334,6 +397,9 @@ export default function Home() {
                 setError(null);
                 setShareUrl(null);
                 setPassphrase('');
+                setQrCodeDataUrl(null);
+                setShowQrCode(false);
+                setShowPassphraseInResult(false);
               }}
               className="w-full h-12 bg-button hover:bg-button-hover text-text font-medium rounded-lg transition-colors"
             >
