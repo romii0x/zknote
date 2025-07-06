@@ -60,9 +60,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (message.length > MAX_NOTE_LENGTH) {
+    // server receives encrypted message which is ~33% larger than plaintext
+    // we need to allow for the encrypted size of 100k chars of plaintext
+    const MAX_ENCRYPTED_MESSAGE_LENGTH = 140000;
+    
+    if (message.length > MAX_ENCRYPTED_MESSAGE_LENGTH) {
       return NextResponse.json(
-        await errorResponse(400, 'Message exceeds 100000 character limit.'),
+        await errorResponse(400, 'Message too large.'),
         { status: 400 }
       );
     }

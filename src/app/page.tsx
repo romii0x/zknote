@@ -113,6 +113,7 @@ export default function Home() {
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -185,21 +186,15 @@ export default function Home() {
     if (!shareUrl) return;
     try {
       await navigator.clipboard.writeText(shareUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1000);
     } catch (err) {
       console.error('Failed to copy to clipboard:', err);
     }
   };
 
   const togglePassphraseVisibility = () => {
-    const newVisibility = !showPassphrase;
-    setShowPassphrase(newVisibility);
-    
-    // hide password after 30 seconds if left visible
-    if (newVisibility) {
-      setTimeout(() => {
-        setShowPassphrase(false);
-      }, 30000);
-    }
+    setShowPassphrase(!showPassphrase);
   };
 
   return (
@@ -211,7 +206,7 @@ export default function Home() {
         </div>
         
         {!noteId ? (
-          <form onSubmit={handleCreate} className="space-y-6">
+          <form onSubmit={handleCreate} className="space-y-4">
             <div>
               <textarea
                 id="note"
@@ -278,19 +273,21 @@ export default function Home() {
               </select>
             </div>
             
+            <div className="flex justify-center">
+              <button 
+                type="submit"
+                disabled={isCreating || note.length === 0}
+                className="h-12 bg-button hover:bg-button-hover disabled:opacity-50 disabled:cursor-not-allowed text-text font-medium rounded-lg transition-colors px-6"
+              >
+                {isCreating ? 'Creating...' : 'Generate Link'}
+              </button>
+            </div>
+            
             {error && (
               <div className="p-4 bg-error/10 border border-error/20 rounded-lg text-error">
                 {error}
               </div>
             )}
-            
-            <button 
-              type="submit"
-              disabled={isCreating || note.length === 0}
-              className="w-full h-12 bg-button hover:bg-button-hover disabled:opacity-50 disabled:cursor-not-allowed text-text font-medium rounded-lg transition-colors"
-            >
-              {isCreating ? 'Creating...' : 'Send Note'}
-            </button>
           </form>
         ) : (
           <div className="space-y-6">
@@ -312,9 +309,13 @@ export default function Home() {
                     className="p-2 hover:bg-accent rounded transition-colors"
                     title="Copy to clipboard"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
+                    {copied ? (
+                      <span className="text-sm font-medium text-text leading-none flex items-center h-5">Copied!</span>
+                    ) : (
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                      </svg>
+                    )}
                   </button>
                 </div>
                 {passphrase.trim() && (

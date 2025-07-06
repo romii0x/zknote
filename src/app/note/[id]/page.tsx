@@ -28,6 +28,7 @@ export default function ViewNote() {
   const [noteData, setNoteData] = useState<any>(null);
   const [showPassphrase, setShowPassphrase] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     if (noteId) {
@@ -225,6 +226,8 @@ export default function ViewNote() {
     if (note) {
       try {
         await navigator.clipboard.writeText(note);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1000);
       } catch (err) {
         console.error('Failed to copy:', err);
       }
@@ -296,14 +299,16 @@ export default function ViewNote() {
                     <button
                       type="button"
                       onClick={() => setShowPassphrase(!showPassphrase)}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded hover:bg-accent transition-colors"
+                      aria-label="Toggle password visibility"
                     >
-                      <img
-                        src="/glyphs/invisible.png"
-                        alt="Toggle visibility"
-                        width={20}
-                        height={20}
-                      />
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        {showPassphrase ? (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                        ) : (
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        )}
+                      </svg>
                     </button>
                   </div>
                   <div className="text-xs text-text-secondary text-right mt-1">
@@ -348,10 +353,16 @@ export default function ViewNote() {
                 <h2 className="text-xl font-semibold">Your Note</h2>
                 <button
                   onClick={copyToClipboard}
-                  className="p-2 hover:bg-input rounded-lg transition-colors"
-                  aria-label="Copy message"
+                  className="p-2 hover:bg-accent rounded transition-colors"
+                  title="Copy to clipboard"
                 >
-                  <img src="/glyphs/copy.png" alt="" width={20} height={20} />
+                  {copied ? (
+                    <span className="text-sm font-medium text-text leading-none flex items-center h-5">Copied!</span>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  )}
                 </button>
               </div>
               <div className="p-4 bg-input border border-border rounded-lg">
