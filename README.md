@@ -1,14 +1,17 @@
 # zknote
 
-Zero-knowledge, self-destructing dead drop with client-side encryption.
+### Generate ephemeral plaintext dead drops with one time access.
+
+- Share sensitive data with confidence on platforms you don't trust
+- Move keys, backup codes, or passwords across devices securely
+- Store time sensitive data for later access or sharing
 
 ## Features
 
-- End-to-end encryption using AES-GCM 256
-- Messages are deleted on successful decryption
-- Message lifetime of up to 1 week
-- Support up to 100000 characters per message
-- Optional Passphrases
+- **Zero Knowledge**: Client side E2EE using AES-GCM 256
+- **One Time Access**: Messages are deleted on successful decryption
+- **Ephemeral**: Set expiration windows from 1 minute to 1 week
+- Optional passphrases and QR code generation
 
 ## Development Setup
 
