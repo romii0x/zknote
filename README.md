@@ -1,15 +1,15 @@
 # zknote
 
-### Generate ephemeral plaintext dead drops with one time access.
+### Securely share sensitive information with one-time access, no traces left behind.
 
-- Share sensitive data with confidence on platforms you don't trust
-- Move keys, backup codes, or passwords across devices securely
-- Store time sensitive data for later access or sharing
+- Send ephemeral plaintext dead drops that self-destruct after being viewed
+- Confidently share passwords, backup codes, or keys on untrusted platforms
+- Store time-sensitive data with flexible expiration times
 
 ## Features
 
-- **Zero Knowledge**: Client side E2EE using AES-GCM 256
-- **One Time Access**: Messages are deleted on successful decryption
+- **Zero Knowledge**: Client side AES-GCM 256 bit encryption
+- **One-Time Access**: Messages are deleted on successful decryption
 - **Ephemeral**: Set expiration windows from 1 minute to 1 week
 - Optional passphrases and QR code generation
 
