@@ -9,6 +9,18 @@ let pgPool: Pool | null = null;
 const isProduction = process.env.NODE_ENV === 'production';
 const databaseUrl = process.env.DATABASE_URL;
 
+// Database row type definitions
+export interface NoteRow {
+  id: string;
+  message: string;
+  iv: string;
+  salt: string | null;
+  delete_token: string;
+  expires_at: string;
+  created_at: string;
+  auth_tag: string | null;
+}
+
 // Type definitions for our database operations
 export interface DatabaseResult {
   rowCount?: number | null;
@@ -99,21 +111,21 @@ export async function executeQuery(query: string, params: unknown[] = []): Promi
 }
 
 // Helper function to get single row
-export async function getRow(query: string, params: unknown[] = []): Promise<unknown | null> {
+export async function getRow(query: string, params: unknown[] = []): Promise<NoteRow | null> {
   const db = await getDb();
   
   try {
     if (isProduction && 'query' in db) {
       // PostgreSQL
       const result = await db.query(query, params);
-      return result.rows[0] || null;
+      return result.rows[0] as NoteRow || null;
     } else if ('get' in db) {
       // SQLite - convert PostgreSQL syntax to SQLite
       const sqliteQuery = query
         .replace(/\$(\d+)/g, '?') // Replace $1, $2 with ?, ?
         .replace(/NOW\(\)/g, "datetime('now')"); // Replace NOW() with SQLite equivalent
       const result = await db.get(sqliteQuery, params);
-      return result;
+      return result as NoteRow || null;
     }
     return null;
   } finally {
@@ -124,21 +136,21 @@ export async function getRow(query: string, params: unknown[] = []): Promise<unk
 }
 
 // Helper function to get multiple rows
-export async function getRows(query: string, params: unknown[] = []): Promise<unknown[]> {
+export async function getRows(query: string, params: unknown[] = []): Promise<NoteRow[]> {
   const db = await getDb();
   
   try {
     if (isProduction && 'query' in db) {
       // PostgreSQL
       const result = await db.query(query, params);
-      return result.rows;
+      return result.rows as NoteRow[];
     } else if ('all' in db) {
       // SQLite - convert PostgreSQL syntax to SQLite
       const sqliteQuery = query
         .replace(/\$(\d+)/g, '?') // Replace $1, $2 with ?, ?
         .replace(/NOW\(\)/g, "datetime('now')"); // Replace NOW() with SQLite equivalent
       const result = await db.all(sqliteQuery, params);
-      return result;
+      return result as NoteRow[];
     }
     return [];
   } finally {
