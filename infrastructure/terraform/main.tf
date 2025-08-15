@@ -275,10 +275,29 @@ resource "aws_lb_target_group" "zknote" {
   }
 }
 
-resource "aws_lb_listener" "zknote" {
+# HTTP to HTTPS redirect
+resource "aws_lb_listener" "zknote_http" {
   load_balancer_arn = aws_lb.zknote.arn
   port              = "80"
   protocol          = "HTTP"
+  
+  default_action {
+    type = "redirect"
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+# HTTPS listener
+resource "aws_lb_listener" "zknote" {
+  load_balancer_arn = aws_lb.zknote.arn
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
+  certificate_arn   = var.certificate_arn
   
   default_action {
     type             = "forward"
@@ -331,6 +350,9 @@ resource "aws_iam_role" "ecs_task_role" {
     ]
   })
 }
+
+# DNS record will be configured manually in Cloudflare
+# The load balancer DNS name will be provided as output for manual DNS configuration
 
 # EventBridge for cleanup job
 resource "aws_cloudwatch_event_rule" "cleanup" {
@@ -459,4 +481,9 @@ output "ecr_repository_url" {
 output "rds_endpoint" {
   description = "The endpoint of the RDS instance"
   value       = aws_db_instance.zknote.endpoint
+}
+
+output "domain_url" {
+  description = "The domain URL for the application"
+  value       = "https://${var.domain_name}"
 } 
