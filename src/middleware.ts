@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import crypto from 'crypto';
 
 // rate limiting configuration matching original
 const RATE_LIMITS = {
