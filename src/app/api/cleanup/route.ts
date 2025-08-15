@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { deleteExpiredNotes } from '@/lib/cleanup';
 
 // cleanup scheduling (need a proper job scheduler in production)
@@ -35,7 +35,7 @@ function startCleanupJob() {
 // start the cleanup job when this module is loaded
 startCleanupJob();
 
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // manual cleanup trigger
     const metrics = await deleteExpiredNotes();

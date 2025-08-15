@@ -10,10 +10,10 @@ async function addTimingDelay(): Promise<void> {
 }
 
 // error response helper with constant time responses
-async function errorResponse(statusCode: number, message: string, details?: any) {
+async function errorResponse(statusCode: number, message: string, details?: unknown) {
   await addTimingDelay();
   
-  const response: any = {
+  const response: Record<string, unknown> = {
     error: message,
     statusCode,
   };
@@ -116,7 +116,7 @@ export async function DELETE(
     // constant time response
     await addTimingDelay();
 
-    if ((result.rowCount || 0) === 0) {
+    if ((result.rowCount ?? 0) === 0) {
       return NextResponse.json(
         await errorResponse(404, 'Note not found or invalid delete token'),
         { status: 404 }

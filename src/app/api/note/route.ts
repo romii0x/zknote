@@ -6,9 +6,6 @@ import { executeQuery } from '@/lib/db';
 const ALLOWED_EXPIRIES = [60000, 180000, 300000, 600000, 3600000, 86400000, 604800000];
 const DEFAULT_EXPIRY = 86400000;
 
-const MAX_NOTE_LENGTH = 100000;
-const MAX_PASSPHRASE_LENGTH = 128;
-
 // validation patterns matching original
 const IV_PATTERN = /^[A-Za-z0-9_-]{16,24}$/;
 const SALT_PATTERN = /^[A-Za-z0-9_-]{16,64}$/;
@@ -27,10 +24,10 @@ async function addTimingDelay(): Promise<void> {
 }
 
 // error response helper with constant time responses
-async function errorResponse(statusCode: number, message: string, details?: any) {
+async function errorResponse(statusCode: number, message: string, details?: unknown) {
   await addTimingDelay();
   
-  const response: any = {
+  const response: Record<string, unknown> = {
     error: message,
     statusCode,
   };

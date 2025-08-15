@@ -13,7 +13,7 @@ export async function deleteExpiredNotes(): Promise<CleanupMetrics> {
       'DELETE FROM notes WHERE expires_at <= NOW()'
     );
     
-    const deletedCount = result.rowCount || 0;
+    const deletedCount = result.rowCount ?? 0;
     
     if (deletedCount > 0) {
       console.log(`Cleaned up ${deletedCount} expired notes`);

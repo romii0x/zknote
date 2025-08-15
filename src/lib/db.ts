@@ -9,6 +9,12 @@ let pgPool: Pool | null = null;
 const isProduction = process.env.NODE_ENV === 'production';
 const databaseUrl = process.env.DATABASE_URL;
 
+// Type definitions for our database operations
+export interface DatabaseResult {
+  rowCount?: number | null;
+  rows?: unknown[];
+}
+
 export async function getDb(): Promise<Database | PoolClient> {
   if (isProduction && databaseUrl) {
     // Use PostgreSQL in production
@@ -62,22 +68,29 @@ export async function closeDb() {
 }
 
 // Helper function to execute queries with proper error handling
-export async function executeQuery(query: string, params: any[] = []) {
+export async function executeQuery(query: string, params: unknown[] = []): Promise<DatabaseResult> {
   const db = await getDb();
   
   try {
     if (isProduction && 'query' in db) {
       // PostgreSQL
       const result = await db.query(query, params);
-      return result;
+      return {
+        rowCount: result.rowCount,
+        rows: result.rows
+      };
     } else if ('run' in db) {
       // SQLite - convert PostgreSQL syntax to SQLite
       const sqliteQuery = query
         .replace(/\$(\d+)/g, '?') // Replace $1, $2 with ?, ?
         .replace(/NOW\(\)/g, "datetime('now')"); // Replace NOW() with SQLite equivalent
       const result = await db.run(sqliteQuery, params);
-      return result;
+      return {
+        rowCount: result.changes !== null ? result.changes : 0,
+        rows: []
+      };
     }
+    return { rowCount: 0, rows: [] };
   } finally {
     if (isProduction && 'release' in db) {
       db.release();
@@ -86,7 +99,7 @@ export async function executeQuery(query: string, params: any[] = []) {
 }
 
 // Helper function to get single row
-export async function getRow(query: string, params: any[] = []) {
+export async function getRow(query: string, params: unknown[] = []): Promise<unknown | null> {
   const db = await getDb();
   
   try {
@@ -102,6 +115,7 @@ export async function getRow(query: string, params: any[] = []) {
       const result = await db.get(sqliteQuery, params);
       return result;
     }
+    return null;
   } finally {
     if (isProduction && 'release' in db) {
       db.release();
@@ -110,7 +124,7 @@ export async function getRow(query: string, params: any[] = []) {
 }
 
 // Helper function to get multiple rows
-export async function getRows(query: string, params: any[] = []) {
+export async function getRows(query: string, params: unknown[] = []): Promise<unknown[]> {
   const db = await getDb();
   
   try {
@@ -126,6 +140,7 @@ export async function getRows(query: string, params: any[] = []) {
       const result = await db.all(sqliteQuery, params);
       return result;
     }
+    return [];
   } finally {
     if (isProduction && 'release' in db) {
       db.release();

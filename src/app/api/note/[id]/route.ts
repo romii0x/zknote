@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
+import { executeQuery } from '@/lib/db';
 
 const DELETE_TOKEN_LENGTH = 32;
 
@@ -12,10 +12,10 @@ async function addTimingDelay(): Promise<void> {
 }
 
 // error response helper with constant time responses
-async function errorResponse(statusCode: number, message: string, details?: any) {
+async function errorResponse(statusCode: number, message: string, details?: unknown) {
   await addTimingDelay();
   
-  const response: any = {
+  const response: Record<string, unknown> = {
     error: message,
     statusCode,
   };
@@ -28,16 +28,15 @@ async function errorResponse(statusCode: number, message: string, details?: any)
 // secure delete with delete token
 async function secureDelete(noteId: string, deleteToken: string): Promise<boolean> {
   try {
-    const db = await getDb();
-    const result = await db.run(
-      'DELETE FROM notes WHERE id = ? AND delete_token = ?',
+    const result = await executeQuery(
+      'DELETE FROM notes WHERE id = $1 AND delete_token = $2',
       [noteId, deleteToken]
     );
     
-    const deleted = (result.changes || 0) > 0;
+    const deleted = (result.rowCount ?? 0) > 0;
 
     return deleted;
-  } catch (err) {
+  } catch {
     return false;
   }
 }
@@ -94,7 +93,7 @@ export async function DELETE(
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       await errorResponse(500, 'Internal server error'),
       { status: 500 }
