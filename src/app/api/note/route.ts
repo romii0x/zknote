@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
-import { getDb } from '@/lib/db';
+import { executeQuery } from '@/lib/db';
 
 const ALLOWED_EXPIRIES = [60000, 180000, 300000, 600000, 3600000, 86400000, 604800000];
 const DEFAULT_EXPIRY = 86400000;
@@ -137,9 +137,8 @@ export async function POST(request: NextRequest) {
     const expiresAt = new Date(Date.now() + finalExpiry).toISOString();
     
     // store already-encrypted data
-    const db = await getDb();
-    await db.run(
-      'INSERT INTO notes (id, message, iv, salt, delete_token, expires_at) VALUES (?, ?, ?, ?, ?, ?)',
+    await executeQuery(
+      'INSERT INTO notes (id, message, iv, salt, delete_token, expires_at) VALUES ($1, $2, $3, $4, $5, $6)',
       [
         noteId,
         message, // Already encrypted by client

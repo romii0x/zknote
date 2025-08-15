@@ -1,4 +1,4 @@
-import { getDb } from './db';
+import { executeQuery } from './db';
 
 export interface CleanupMetrics {
   success: boolean;
@@ -8,14 +8,12 @@ export interface CleanupMetrics {
 
 export async function deleteExpiredNotes(): Promise<CleanupMetrics> {
   try {
-    const db = await getDb();
-    
     // delete expired notes
-    const result = await db.run(
-      'DELETE FROM notes WHERE expires_at <= datetime("now")'
+    const result = await executeQuery(
+      'DELETE FROM notes WHERE expires_at <= NOW()'
     );
     
-    const deletedCount = result.changes || 0;
+    const deletedCount = result.rowCount || 0;
     
     if (deletedCount > 0) {
       console.log(`Cleaned up ${deletedCount} expired notes`);

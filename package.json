@@ -13,6 +13,7 @@
   "dependencies": {
     "@types/uuid": "^10.0.0",
     "next": "^14.0.0",
+    "pg": "^8.11.3",
     "qrcode": "^1.5.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -22,6 +23,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@types/pg": "^8.10.9",
     "@types/qrcode": "^1.5.5",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",

@@ -42,3 +42,24 @@ next-env.d.ts
 
 # database
 db/notes.db
+
+# terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+infrastructure/terraform/terraform.tfvars
+
+# docker
+.dockerignore
+
+# aws
+.aws/
+
+# logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db

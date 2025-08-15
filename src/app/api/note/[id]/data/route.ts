@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getDb } from '@/lib/db';
+import { getRow, executeQuery } from '@/lib/db';
 
 // validation patterns matching original
 const ID_PATTERN = /^[A-Za-z0-9_-]{22}$/;
@@ -40,9 +40,8 @@ export async function GET(
     }
 
     // get note from database with constant time response
-    const db = await getDb();
-    const note = await db.get(
-      'SELECT * FROM notes WHERE id = ? AND expires_at > datetime("now")',
+    const note = await getRow(
+      'SELECT * FROM notes WHERE id = $1 AND expires_at > NOW()',
       [noteId]
     );
 
@@ -60,7 +59,7 @@ export async function GET(
     const expiresAt = new Date(note.expires_at);
     if (expiresAt < new Date()) {
       // delete expired note
-      await db.run('DELETE FROM notes WHERE id = ?', [noteId]);
+      await executeQuery('DELETE FROM notes WHERE id = $1', [noteId]);
       return NextResponse.json(
         await errorResponse(410, 'Note expired'),
         { status: 410 }
@@ -109,16 +108,15 @@ export async function DELETE(
     }
 
     // delete the note after successful client-side decryption
-    const db = await getDb();
-    const result = await db.run(
-      'DELETE FROM notes WHERE id = ? AND delete_token = ?',
+    const result = await executeQuery(
+      'DELETE FROM notes WHERE id = $1 AND delete_token = $2',
       [noteId, deleteToken]
     );
 
     // constant time response
     await addTimingDelay();
 
-    if ((result.changes || 0) === 0) {
+    if ((result.rowCount || 0) === 0) {
       return NextResponse.json(
         await errorResponse(404, 'Note not found or invalid delete token'),
         { status: 404 }
