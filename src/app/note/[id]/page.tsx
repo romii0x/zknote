@@ -25,6 +25,7 @@ export default function ViewNote() {
   const [isDecrypting, setIsDecrypting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDecrypted, setIsDecrypted] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [noteData, setNoteData] = useState<any>(null);
   const [showPassphrase, setShowPassphrase] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -78,14 +79,14 @@ export default function ViewNote() {
         // no salt and no key - error
         setError('No decryption key found. This note requires a key in the URL.');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to load note');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const decryptWithKey = async (key: string, data?: any) => {
+  const decryptWithKey = async (key: string, data?: Record<string, unknown>) => {
     const noteDataToUse = data || noteData;
     
     if (!noteDataToUse) {
@@ -130,7 +131,7 @@ export default function ViewNote() {
 
       setNote(plaintext);
       setIsDecrypted(true);
-    } catch (err) {
+    } catch {
       setError('Failed to decrypt note. Invalid key.');
     } finally {
       setIsDecrypting(false);
@@ -198,14 +199,14 @@ export default function ViewNote() {
 
       setNote(plaintext);
       setIsDecrypted(true);
-    } catch (err) {
+    } catch {
       setError('Failed to decrypt note. Please check your passphrase.');
     } finally {
       setIsDecrypting(false);
     }
   };
 
-  const deleteNote = async (data?: any) => {
+  const deleteNote = async (data?: Record<string, unknown>) => {
     const noteDataToUse = data || noteData;
     try {
       const response = await fetch(`/api/note/${noteId}/data`, {
@@ -217,8 +218,8 @@ export default function ViewNote() {
       if (!response.ok) {
         console.error('Failed to delete note');
       }
-    } catch (err) {
-      console.error('Error deleting note:', err);
+    } catch {
+      console.error('Error deleting note');
     }
   };
 

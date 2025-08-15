@@ -3,14 +3,15 @@
 import { useState } from 'react';
 import QRCode from 'qrcode';
 
-function generatePassphrase(length = 32) {
-  const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let pass = '';
-  for (let i = 0; i < length; i++) {
-    pass += charset.charAt(Math.floor(Math.random() * charset.length));
-  }
-  return pass;
-}
+// Unused function - keeping for potential future use
+// function generatePassphrase(length = 32) {
+//   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+//   let pass = '';
+//   for (let i = 0; i < length; i++) {
+//     pass += charset.charAt(Math.floor(Math.random() * charset.length));
+//   }
+//   return pass;
+// }
 
 const EXPIRY_OPTIONS = [
   { value: 60000, label: '1 min' },
@@ -146,7 +147,7 @@ export default function Home() {
       }
 
       const { ciphertext, key, iv, ...rest } = encryptionResult;
-      const body: any = { message: ciphertext, iv, expiry };
+      const body: Record<string, unknown> = { message: ciphertext, iv, expiry };
 
       if ('salt' in rest) body.salt = rest.salt;
 
