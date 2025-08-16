@@ -2,6 +2,8 @@
 
 ### Securely share sensitive information with one-time access, no traces left behind.
 
+**🌐 Live Demo:** [https://zknote.cc](https://zknote.cc)
+
 - Send ephemeral plaintext dead drops that self-destruct after being viewed
 - Confidently share passwords, backup codes, or keys on untrusted platforms
 - Store time-sensitive data with flexible expiration times
@@ -54,6 +56,14 @@ This is a zero-knowledge application where:
 - The server never sees plaintext messages
 - Keys are either derived from passphrases or generated randomly
 - Messages are automatically deleted after successful decryption
+
+## Deployment
+
+This application is deployed on AWS using:
+- **ECS Fargate** for container orchestration
+- **RDS PostgreSQL** for data storage
+- **Application Load Balancer** & **Auto-scaling**
+- **HTTPS/SSL** via AWS Certificate Manager
 
 ## Contributing
 
