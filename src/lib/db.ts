@@ -38,6 +38,28 @@ export async function getDb(): Promise<Database | PoolClient> {
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 2000,
       });
+      
+      // Initialize PostgreSQL schema
+      try {
+        const client = await pgPool.connect();
+        await client.query(`
+          CREATE TABLE IF NOT EXISTS notes (
+            id TEXT PRIMARY KEY,
+            message TEXT NOT NULL,
+            iv TEXT NOT NULL,
+            salt TEXT,
+            delete_token TEXT NOT NULL,
+            expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+            auth_tag TEXT
+          );
+          
+          CREATE INDEX IF NOT EXISTS idx_notes_expires_at ON notes(expires_at);
+        `);
+        client.release();
+      } catch (error) {
+        console.error('Failed to initialize PostgreSQL schema:', error);
+      }
     }
     return pgPool.connect();
   } else {
