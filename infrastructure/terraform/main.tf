@@ -38,8 +38,7 @@ module "vpc" {
   private_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
   public_subnets  = ["10.0.101.0/24", "10.0.102.0/24"]
   
-  enable_nat_gateway = true
-  single_nat_gateway = true
+  enable_nat_gateway = false  # Cost optimization: removed NAT Gateway
   
   enable_dns_hostnames = true
   enable_dns_support   = true
@@ -226,13 +225,13 @@ resource "aws_ecs_service" "zknote" {
   name            = "zknote-service"
   cluster         = aws_ecs_cluster.zknote.id
   task_definition = aws_ecs_task_definition.zknote.arn
-  desired_count   = 2
+  desired_count   = 1  # Cost optimization: reduced from 2 to 1 task
   launch_type     = "FARGATE"
   
   network_configuration {
-    subnets          = module.vpc.private_subnets
+    subnets          = module.vpc.public_subnets  # Use public subnets since no NAT Gateway
     security_groups  = [aws_security_group.ecs.id]
-    assign_public_ip = false
+    assign_public_ip = true  # Assign public IP for internet access
   }
   
   load_balancer {
@@ -242,6 +241,30 @@ resource "aws_ecs_service" "zknote" {
   }
   
   depends_on = [aws_lb_listener.zknote]
+}
+
+# Auto-scaling for cost optimization
+resource "aws_appautoscaling_target" "zknote" {
+  max_capacity       = 2
+  min_capacity       = 0  # Scale to 0 when not used
+  resource_id        = "service/${aws_ecs_cluster.zknote.name}/${aws_ecs_service.zknote.name}"
+  scalable_dimension = "ecs:service:DesiredCount"
+  service_namespace  = "ecs"
+}
+
+resource "aws_appautoscaling_policy" "zknote_cpu" {
+  name               = "zknote-cpu-autoscaling"
+  policy_type        = "TargetTrackingScaling"
+  resource_id        = aws_appautoscaling_target.zknote.resource_id
+  scalable_dimension = aws_appautoscaling_target.zknote.scalable_dimension
+  service_namespace  = aws_appautoscaling_target.zknote.service_namespace
+
+  target_tracking_scaling_policy_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+    }
+    target_value = 70.0
+  }
 }
 
 # Application Load Balancer
@@ -372,9 +395,9 @@ resource "aws_cloudwatch_event_target" "cleanup" {
     task_definition_arn = aws_ecs_task_definition.cleanup.arn
     launch_type         = "FARGATE"
     network_configuration {
-      subnets          = module.vpc.private_subnets
+      subnets          = module.vpc.public_subnets  # Use public subnets since no NAT Gateway
       security_groups  = [aws_security_group.ecs.id]
-      assign_public_ip = false
+      assign_public_ip = true  # Assign public IP for internet access
     }
   }
 }
