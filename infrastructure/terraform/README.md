@@ -18,9 +18,9 @@ The infrastructure creates a complete AWS environment for running zknote:
 
 ### Networking
 - VPC with CIDR `10.0.0.0/16`
-- 2 public subnets for ALB
-- 2 private subnets for ECS and RDS
-- NAT Gateway for private subnet internet access
+- 2 public subnets for ALB and ECS (cost optimized)
+- 2 private subnets for RDS only
+- **No NAT Gateway** - ECS uses public subnets for direct internet access
 
 ### Security Groups
 - **ALB**: Allows HTTP/HTTPS from internet
@@ -35,10 +35,11 @@ The infrastructure creates a complete AWS environment for running zknote:
 - Private subnet placement
 
 ### Application
-- ECS Fargate with 2 tasks for high availability
+- ECS Fargate with 1 task (cost optimized)
 - 256 CPU units, 512MB memory per task
-- Auto-scaling based on load (configurable)
+- **Auto-scaling with scale-to-zero** (0-2 tasks based on usage)
 - Health checks and automatic recovery
+- Public subnet placement for direct internet access
 
 ### CI/CD
 - GitHub Actions workflow for automated deployment
@@ -81,7 +82,7 @@ The infrastructure creates a complete AWS environment for running zknote:
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `aws_region` | AWS region for resources | `us-east-1` |
+| `aws_region` | AWS region for resources | `us-east-2` |
 | `environment` | Environment name | `production` |
 | `db_password` | Database password | Required |
 | `domain_name` | Custom domain name | Optional |
@@ -97,28 +98,40 @@ After deployment, Terraform will output:
 
 ## Cost Estimation
 
-Monthly costs (us-east-1):
+Monthly costs (us-east-2) - **Optimized Configuration**:
 
+### Current Optimized Costs:
 - **RDS**: ~$15-20 (db.t3.micro)
-- **ECS**: ~$10-15 (2 tasks)
-- **ALB**: ~$20
-- **NAT Gateway**: ~$45
+- **ECS**: ~$15-50 (1 task + auto-scaling 0-2)
+- **ALB**: ~$18
+- **NAT Gateway**: $0 (removed for cost optimization)
 - **Data Transfer**: ~$5-10
-- **Total**: ~$95-110/month
+- **Other**: ~$5-10 (CloudWatch, EventBridge, etc.)
+- **Total**: ~$58-108/month
 
-**Note**: Costs can be reduced by:
-- Using Spot instances for ECS
-- Reducing task count to 1
-- Using smaller RDS instance
-- Removing NAT Gateway (if no internet access needed)
+### Cost Optimization Features:
+-  **No NAT Gateway** (saves ~$45/month)
+-  **Scale-to-zero auto-scaling** (saves when not used)
+-  **Single ECS task** (reduced from 2)
+-  **Public subnet placement** (direct internet access)
+
+### Usage-Based Costs:
+- **Zero usage**: ~$36-37/month
+- **Low usage (0-300 users)**: ~$52-58/month  
+- **Medium usage (300-1000 users)**: ~$59-72/month
+- **High usage (1000+ users)**: ~$72-104/month
+
+**Savings**: ~50-60% reduction from original ~$120-140/month
 
 ## Security
 
 ### Network Security
 - All resources in VPC
-- Private subnets for sensitive resources
+- Private subnets for RDS only
+- Public subnets for ECS (cost optimized, still secure)
 - Security groups with minimal required access
-- No direct internet access to ECS/RDS
+- No direct internet access to RDS
+- ECS protected by ALB and security groups
 
 ### Data Security
 - RDS encryption at rest
@@ -162,9 +175,10 @@ Monthly costs (us-east-1):
 - Terraform state backups in S3
 
 ### Scaling
+- **Auto-scaling with scale-to-zero** (0-2 tasks based on CPU usage)
 - Horizontal scaling via ECS service updates
 - Vertical scaling via task definition updates
-- Auto-scaling based on metrics
+- **Cost-optimized scaling** - scales down to 0 when not used
 
 ## Troubleshooting
 
