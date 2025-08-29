@@ -3,15 +3,15 @@ import { executeQuery } from '@/lib/db';
 
 const DELETE_TOKEN_LENGTH = 32;
 
-// validation patterns matching original
+// validation pattern for note ID format
 const ID_PATTERN = /^[A-Za-z0-9_-]{22}$/;
 
-// timing attack protection
+// adds random delay to prevent timing attacks
 async function addTimingDelay(): Promise<void> {
   await new Promise(resolve => setTimeout(resolve, Math.random() * 100));
 }
 
-// error response helper with constant time responses
+// creates consistent error responses with timing protection
 async function errorResponse(statusCode: number, message: string, details?: unknown) {
   await addTimingDelay();
   
@@ -25,7 +25,7 @@ async function errorResponse(statusCode: number, message: string, details?: unkn
   return response;
 }
 
-// secure delete with delete token
+// securely deletes note using delete token
 async function secureDelete(noteId: string, deleteToken: string): Promise<boolean> {
   try {
     const result = await executeQuery(
@@ -41,6 +41,7 @@ async function secureDelete(noteId: string, deleteToken: string): Promise<boolea
   }
 }
 
+// deletes note using delete token validation
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -82,7 +83,7 @@ export async function DELETE(
     // attempt to delete the note
     const deleted = await secureDelete(noteId, deleteToken);
 
-    // constant time response
+    // add timing delay for security
     await addTimingDelay();
 
     if (!deleted) {

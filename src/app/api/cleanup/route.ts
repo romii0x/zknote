@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import { deleteExpiredNotes } from '@/lib/cleanup';
 
-// cleanup scheduling (need a proper job scheduler in production)
+// cleanup job scheduling
 let cleanupInterval: NodeJS.Timeout | null = null;
 let recoveryTimeout: NodeJS.Timeout | null = null;
 
-// cleanup function to clear all timers
+// clears all cleanup timers
 function cleanupTimers() {
   if (cleanupInterval) {
     clearInterval(cleanupInterval);
@@ -17,7 +17,7 @@ function cleanupTimers() {
   }
 }
 
-// start cleanup job if not already running
+// starts the background cleanup job
 function startCleanupJob() {
   if (cleanupInterval) {
     return; // already running
@@ -45,14 +45,14 @@ function startCleanupJob() {
 // start the cleanup job when this module is loaded
 startCleanupJob();
 
-// cleanup on module unload (might not always be called in serverless env)
+// cleanup timers on process exit (may not work in serverless)
 process.on('exit', cleanupTimers);
 process.on('SIGINT', cleanupTimers);
 process.on('SIGTERM', cleanupTimers);
 
 export async function POST() {
   try {
-    // manual cleanup trigger
+    // manually trigger cleanup job
     const metrics = await deleteExpiredNotes();
     
     return NextResponse.json({

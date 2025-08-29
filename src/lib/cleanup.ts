@@ -6,6 +6,7 @@ export interface CleanupMetrics {
   error?: string;
 }
 
+// removes expired notes from database
 export async function deleteExpiredNotes(): Promise<CleanupMetrics> {
   try {
     // delete expired notes

@@ -3,27 +3,28 @@ import { v4 as uuidv4 } from 'uuid';
 import crypto from 'crypto';
 import { executeQuery } from '@/lib/db';
 
+// allowed expiry times in milliseconds
 const ALLOWED_EXPIRIES = [60000, 180000, 300000, 600000, 3600000, 86400000, 604800000];
 const DEFAULT_EXPIRY = 86400000;
 
-// validation patterns matching original
+// validation patterns for input sanitization
 const IV_PATTERN = /^[A-Za-z0-9_-]{16,24}$/;
 const SALT_PATTERN = /^[A-Za-z0-9_-]{16,64}$/;
 const ID_PATTERN = /^[A-Za-z0-9_-]{22}$/;
 
-// UUID to base64url conversion matching original
+// converts UUID to base64url format for note IDs
 function uuidToBase64url(uuid: string): string {
   const hex = uuid.replace(/-/g, "");
   const buffer = Buffer.from(hex, "hex");
   return buffer.toString("base64url").replace(/=+$/, "");
 }
 
-// timing attack protection
+// adds random delay to prevent timing attacks
 async function addTimingDelay(): Promise<void> {
   await new Promise(resolve => setTimeout(resolve, Math.random() * 100));
 }
 
-// error response helper with constant time responses
+// creates consistent error responses with timing protection
 async function errorResponse(statusCode: number, message: string, details?: unknown) {
   await addTimingDelay();
   
@@ -42,7 +43,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { message, iv, salt, expiry } = body;
 
-    // input validation
+    // validate message input
     if (!message || typeof message !== 'string') {
       return NextResponse.json(
         await errorResponse(400, 'Message cannot be empty.'),
@@ -57,8 +58,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // server receives encrypted message which is ~33% larger than plaintext
-    // we need to allow for the encrypted size of 100k chars of plaintext
+    // encrypted messages are ~33% larger than plaintext, allow for 100k chars
     const MAX_ENCRYPTED_MESSAGE_LENGTH = 140000;
     
     if (message.length > MAX_ENCRYPTED_MESSAGE_LENGTH) {
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // validate content pattern (base64 content only)
+    // validate base64 content format
     if (!/^[A-Za-z0-9+/=_-]+$/.test(message)) {
       return NextResponse.json(
         await errorResponse(400, 'Invalid message format.'),
@@ -117,10 +117,10 @@ export async function POST(request: NextRequest) {
 
     const finalExpiry = ALLOWED_EXPIRIES.includes(expiry) ? expiry : DEFAULT_EXPIRY;
 
-    // generate note ID with proper UUID to base64url conversion
+    // generate unique note ID from UUID
     const noteId = uuidToBase64url(uuidv4());
     
-    // validate ID pattern
+    // validate generated ID format
     if (!ID_PATTERN.test(noteId)) {
       return NextResponse.json(
         await errorResponse(500, 'Failed to generate valid note ID'),
@@ -130,10 +130,10 @@ export async function POST(request: NextRequest) {
     
     const deleteToken = crypto.randomBytes(16).toString('hex');
     
-    // set expiration
+    // calculate expiration timestamp
     const expiresAt = new Date(Date.now() + finalExpiry).toISOString();
     
-    // store already-encrypted data
+    // store encrypted note data
     await executeQuery(
       'INSERT INTO notes (id, message, iv, salt, delete_token, expires_at) VALUES ($1, $2, $3, $4, $5, $6)',
       [

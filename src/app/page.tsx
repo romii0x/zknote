@@ -3,16 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import QRCode from 'qrcode';
 
-// Unused function - keeping for potential future use
-// function generatePassphrase(length = 32) {
-//   const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-//   let pass = '';
-//   for (let i = 0; i < length; i++) {
-//     pass += charset.charAt(Math.floor(Math.random() * charset.length));
-//   }
-//   return pass;
-// }
-
+// available expiry time options
 const EXPIRY_OPTIONS = [
   { value: 60000, label: '1 min' },
   { value: 180000, label: '3 min' },
@@ -26,17 +17,18 @@ const EXPIRY_OPTIONS = [
 const MAX_NOTE_LENGTH = 100000;
 const MAX_PASSPHRASE_LENGTH = 128;
 
-// conversion helpers
+// converts Uint8Array to base64 string
 function uint8ArrayToBase64(u8: Uint8Array): string {
   return btoa(String.fromCharCode(...u8));
 }
 
+// converts Uint8Array to base64url string without padding
 function uint8ArrayToBase64url(u8: Uint8Array): string {
   const base64 = btoa(String.fromCharCode(...u8));
   return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-// encrypt with random key
+// encrypts message with randomly generated key
 async function encrypt(plaintext: string) {
   const enc = new TextEncoder();
   const iv = crypto.getRandomValues(new Uint8Array(12));
@@ -59,7 +51,7 @@ async function encrypt(plaintext: string) {
   };
 }
 
-// encrypt with passphrase
+// encrypts message with user-provided passphrase
 async function encryptWithPassphrase(plaintext: string, passphrase: string) {
   const enc = new TextEncoder();
   const iv = crypto.getRandomValues(new Uint8Array(12));
@@ -120,7 +112,7 @@ export default function Home() {
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
   const [showQrCode, setShowQrCode] = useState(false);
   
-  // ref for timeout cleanup
+  // timeout ref for copy feedback
   const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleCreate = useCallback(async (e: React.FormEvent) => {
@@ -172,12 +164,12 @@ export default function Home() {
       setNoteId(data.id);
       setExpiresAt(new Date(Date.now() + expiry).toISOString());
       
-      // generate share URL based on mode using the URL from API response
+      // create share URL based on encryption mode
       if (passphrase.trim()) {
-        // with passphrase: just the URL, no passphrase in URL
+        // passphrase mode: URL only
         setShareUrl(`${window.location.origin}${data.url}`);
       } else {
-        // without passphrase: key in URL hash
+        // key mode: URL with key in hash
         setShareUrl(`${window.location.origin}${data.url}#k=${encodeURIComponent(key as string)}`);
       }
       
@@ -262,7 +254,7 @@ export default function Home() {
     setShowPassphraseInResult(false);
   }, []);
 
-  // cleanup timeout on unmount
+  // clear timeout on component unmount
   useEffect(() => {
     return () => {
       if (copyTimeoutRef.current) {
@@ -271,6 +263,7 @@ export default function Home() {
     };
   }, []);
 
+  // main app component
   return (
     <div className="min-h-screen bg-page text-text flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">

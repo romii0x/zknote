@@ -5,11 +5,11 @@ import { Pool, PoolClient } from 'pg';
 let sqliteDb: Database | null = null;
 let pgPool: Pool | null = null;
 
-// Determine database type from environment
+// determine database type from environment
 const isProduction = process.env.NODE_ENV === 'production';
 const databaseUrl = process.env.DATABASE_URL;
 
-// Database row type definitions
+// database row type definitions
 export interface NoteRow {
   id: string;
   message: string;
@@ -21,7 +21,7 @@ export interface NoteRow {
   auth_tag: string | null;
 }
 
-// Type definitions for our database operations
+// type definitions for database operations
 export interface DatabaseResult {
   rowCount?: number | null;
   rows?: unknown[];
@@ -29,7 +29,7 @@ export interface DatabaseResult {
 
 export async function getDb(): Promise<Database | PoolClient> {
   if (isProduction && databaseUrl) {
-    // Use PostgreSQL in production
+    // use PostgreSQL in production
     if (!pgPool) {
       pgPool = new Pool({
         connectionString: databaseUrl,
@@ -39,7 +39,7 @@ export async function getDb(): Promise<Database | PoolClient> {
         connectionTimeoutMillis: 2000,
       });
       
-      // Initialize PostgreSQL schema
+      // initialize PostgreSQL schema
       try {
         const client = await pgPool.connect();
         await client.query(`
@@ -63,7 +63,7 @@ export async function getDb(): Promise<Database | PoolClient> {
     }
     return pgPool.connect();
   } else {
-    // Use SQLite in development
+    // use SQLite in development
     if (!sqliteDb) {
       sqliteDb = await open({
         filename: './db/notes.db',
@@ -101,7 +101,7 @@ export async function closeDb() {
   }
 }
 
-// Helper function to execute queries with proper error handling
+// executes database queries with proper error handling
 export async function executeQuery(query: string, params: unknown[] = []): Promise<DatabaseResult> {
   const db = await getDb();
   
@@ -114,7 +114,7 @@ export async function executeQuery(query: string, params: unknown[] = []): Promi
         rows: result.rows
       };
     } else if ('run' in db) {
-      // SQLite - convert PostgreSQL syntax to SQLite
+      // SQLite query - convert PostgreSQL syntax
       const sqliteQuery = query
         .replace(/\$(\d+)/g, '?') // Replace $1, $2 with ?, ?
         .replace(/NOW\(\)/g, "datetime('now')"); // Replace NOW() with SQLite equivalent
@@ -132,7 +132,7 @@ export async function executeQuery(query: string, params: unknown[] = []): Promi
   }
 }
 
-// Helper function to get single row
+// gets single row from database
 export async function getRow(query: string, params: unknown[] = []): Promise<NoteRow | null> {
   const db = await getDb();
   
@@ -142,7 +142,7 @@ export async function getRow(query: string, params: unknown[] = []): Promise<Not
       const result = await db.query(query, params);
       return result.rows[0] as NoteRow || null;
     } else if ('get' in db) {
-      // SQLite - convert PostgreSQL syntax to SQLite
+      // SQLite query - convert PostgreSQL syntax
       const sqliteQuery = query
         .replace(/\$(\d+)/g, '?') // Replace $1, $2 with ?, ?
         .replace(/NOW\(\)/g, "datetime('now')"); // Replace NOW() with SQLite equivalent
@@ -157,7 +157,7 @@ export async function getRow(query: string, params: unknown[] = []): Promise<Not
   }
 }
 
-// Helper function to get multiple rows
+// gets multiple rows from database
 export async function getRows(query: string, params: unknown[] = []): Promise<NoteRow[]> {
   const db = await getDb();
   
@@ -167,7 +167,7 @@ export async function getRows(query: string, params: unknown[] = []): Promise<No
       const result = await db.query(query, params);
       return result.rows as NoteRow[];
     } else if ('all' in db) {
-      // SQLite - convert PostgreSQL syntax to SQLite
+      // SQLite query - convert PostgreSQL syntax
       const sqliteQuery = query
         .replace(/\$(\d+)/g, '?') // Replace $1, $2 with ?, ?
         .replace(/NOW\(\)/g, "datetime('now')"); // Replace NOW() with SQLite equivalent

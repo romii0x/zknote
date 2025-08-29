@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 
 const MAX_PASSPHRASE_LENGTH = 128;
 
+// note data structure from API
 interface NoteData {
   id: string;
   message: string;
@@ -16,11 +17,12 @@ interface NoteData {
   authTag: string | null;
 }
 
-// conversion helpers
+// converts base64 string to byte array
 function base64ToBytes(b64: string): Uint8Array {
   return Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
 }
 
+// converts base64url string to byte array with padding
 function base64urlToBytes(b64url: string): Uint8Array {
   const padLength = (4 - (b64url.length % 4)) % 4;
   const base64 = b64url.replace(/-/g, "+").replace(/_/g, "/") + "=".repeat(padLength);
@@ -41,6 +43,7 @@ export default function ViewNote() {
   const [isLoading, setIsLoading] = useState(true);
   const [copied, setCopied] = useState(false);
   const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hashProcessedRef = useRef(false);
 
   const loadNote = useCallback(async () => {
     setIsLoading(true);
@@ -64,13 +67,14 @@ export default function ViewNote() {
       const data = await response.json();
       setNoteData(data);
       
-      // check for key in URL hash AFTER we have the note data
-      if (typeof window !== 'undefined' && window.location.hash) {
+      // check for decryption key in URL hash
+      if (typeof window !== 'undefined' && window.location.hash && !hashProcessedRef.current) {
         const hash = window.location.hash.slice(1);
         console.log('URL hash (without #):', hash);
         const keyParam = new URLSearchParams(hash).get('k');
         console.log('Key param from URL:', keyParam);
         if (keyParam) {
+          hashProcessedRef.current = true;
           const noteDataToUse = data;
           
           if (!noteDataToUse) {
@@ -92,7 +96,7 @@ export default function ViewNote() {
               ['decrypt']
             );
 
-            // for key mode, the message includes the auth tag
+            // decrypt message with key from URL
             const ciphertext = base64ToBytes(noteDataToUse.message);
             const iv = base64urlToBytes(noteDataToUse.iv);
 
@@ -104,11 +108,11 @@ export default function ViewNote() {
 
             const plaintext = new TextDecoder().decode(plaintextBuffer);
             
-            // clean up
+            // clear sensitive data from memory
             keyBytes.fill(0);
             iv.fill(0);
 
-            // delete note
+            // destroy note after successful decryption
             try {
               const response = await fetch(`/api/note/${noteId}/data`, {
                 method: 'DELETE',
@@ -134,11 +138,11 @@ export default function ViewNote() {
         }
       }
       
-      // if note has salt, it needs passphrase
+      // check if note requires passphrase or key
       if (data.salt) {
-        // show passphrase input - do nothing, it will show automatically
+        // note uses passphrase encryption
       } else {
-        // no salt and no key - error
+        // note requires key in URL
         setError('No decryption key found. This note requires a key in the URL.');
       }
     } catch {
@@ -216,11 +220,11 @@ export default function ViewNote() {
 
       const plaintext = new TextDecoder().decode(plaintextBuffer);
 
-      // clean up
+      // clear sensitive data from memory
       salt.fill(0);
       iv.fill(0);
 
-      // delete note
+      // destroy note after successful decryption
       try {
         const response = await fetch(`/api/note/${noteId}/data`, {
           method: 'DELETE',

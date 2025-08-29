@@ -1,15 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getRow, executeQuery } from '@/lib/db';
 
-// validation patterns matching original
+// validation pattern for note ID format
 const ID_PATTERN = /^[A-Za-z0-9_-]{22}$/;
 
-// timing attack protection
+// adds random delay to prevent timing attacks
 async function addTimingDelay(): Promise<void> {
   await new Promise(resolve => setTimeout(resolve, Math.random() * 100));
 }
 
-// error response helper with constant time responses
+// creates consistent error responses with timing protection
 async function errorResponse(statusCode: number, message: string, details?: unknown) {
   await addTimingDelay();
   
@@ -23,7 +23,7 @@ async function errorResponse(statusCode: number, message: string, details?: unkn
   return response;
 }
 
-// GET endpoint to retrieve encrypted note data
+// retrieves encrypted note data for client-side decryption
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -39,7 +39,7 @@ export async function GET(
       );
     }
 
-    // get note from database with constant time response
+    // retrieve note from database
     const note = await getRow(
       'SELECT * FROM notes WHERE id = $1 AND expires_at > NOW()',
       [noteId]
@@ -55,7 +55,7 @@ export async function GET(
       );
     }
 
-    // check if note has expired
+    // check note expiration
     const expiresAt = new Date(note.expires_at);
     if (expiresAt < new Date()) {
       // delete expired note
@@ -66,7 +66,7 @@ export async function GET(
       );
     }
 
-    // return encrypted data for client-side decryption
+    // return encrypted note data
     return NextResponse.json({
       id: note.id,
       message: note.message,
@@ -83,7 +83,7 @@ export async function GET(
   }
 }
 
-// DELETE endpoint for note deletion after successful client-side decryption
+// deletes note after successful client-side decryption
 export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
@@ -113,7 +113,7 @@ export async function DELETE(
       [noteId, deleteToken]
     );
 
-    // constant time response
+    // add timing delay for security
     await addTimingDelay();
 
     if ((result.rowCount ?? 0) === 0) {

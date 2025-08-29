@@ -1,21 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-// rate limiting configuration matching original
+// rate limiting configuration
 const RATE_LIMITS = {
   create: { max: 5, window: 60 * 1000 }, // 5 requests per minute
   read: { max: 20, window: 60 * 1000 },  // 20 requests per minute
   global: { max: 100, window: 60 * 1000 } // 100 requests per minute
 };
 
-// in-memory rate limit store (use Redis for production)
+// in-memory rate limit store (consider Redis in production)
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 
+// extracts client IP from request headers
 function getClientIP(request: NextRequest): string {
   return request.headers.get('x-forwarded-for')?.split(',')[0] || 
          request.headers.get('x-real-ip') || 
          'unknown';
 }
 
+// checks if request exceeds rate limit
 function checkRateLimit(clientIP: string, type: 'create' | 'read' | 'global'): boolean {
   const now = Date.now();
   const key = `${clientIP}:${type}`;
@@ -37,6 +39,7 @@ function checkRateLimit(clientIP: string, type: 'create' | 'read' | 'global'): b
   return true;
 }
 
+// applies rate limiting and security headers to all requests
 export function middleware(request: NextRequest) {
   const clientIP = getClientIP(request);
   const pathname = request.nextUrl.pathname;
@@ -68,19 +71,19 @@ export function middleware(request: NextRequest) {
     }
   }
   
-  // security headers matching original implementation
+  // apply security headers
   const response = NextResponse.next();
   
-  // csp headers - allow Next.js to work in development
+  // set CSP headers based on environment
   const isDevelopment = process.env.NODE_ENV === 'development';
   
   if (isDevelopment) {
-    // development csp - more permissive for Next.js
+    // development CSP - more permissive for Next.js
     response.headers.set('Content-Security-Policy', 
       "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; media-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'; manifest-src 'self'"
     );
   } else {
-    // temporarily disable CSP to get app working, will add back properly later
+    // production CSP temporarily disabled
     // response.headers.set('Content-Security-Policy', '...');
   }
   
