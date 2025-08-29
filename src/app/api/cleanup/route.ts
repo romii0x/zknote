@@ -3,6 +3,19 @@ import { deleteExpiredNotes } from '@/lib/cleanup';
 
 // cleanup scheduling (need a proper job scheduler in production)
 let cleanupInterval: NodeJS.Timeout | null = null;
+let recoveryTimeout: NodeJS.Timeout | null = null;
+
+// cleanup function to clear all timers
+function cleanupTimers() {
+  if (cleanupInterval) {
+    clearInterval(cleanupInterval);
+    cleanupInterval = null;
+  }
+  if (recoveryTimeout) {
+    clearTimeout(recoveryTimeout);
+    recoveryTimeout = null;
+  }
+}
 
 // start cleanup job if not already running
 function startCleanupJob() {
@@ -21,11 +34,8 @@ function startCleanupJob() {
       console.error('Cleanup job failed critically:', err);
       
       // attempt to recover by resetting the job
-      if (cleanupInterval) {
-        clearInterval(cleanupInterval);
-        cleanupInterval = null;
-        setTimeout(startCleanupJob, 60000); // try again in 1 minute
-      }
+      cleanupTimers();
+      recoveryTimeout = setTimeout(startCleanupJob, 60000); // try again in 1 minute
     }
   }, 5 * 60 * 1000); // 5 minutes
   
@@ -34,6 +44,11 @@ function startCleanupJob() {
 
 // start the cleanup job when this module is loaded
 startCleanupJob();
+
+// cleanup on module unload (might not always be called in serverless env)
+process.on('exit', cleanupTimers);
+process.on('SIGINT', cleanupTimers);
+process.on('SIGTERM', cleanupTimers);
 
 export async function POST() {
   try {

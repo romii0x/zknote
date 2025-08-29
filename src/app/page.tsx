@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import QRCode from 'qrcode';
 
 // Unused function - keeping for potential future use
@@ -119,8 +119,11 @@ export default function Home() {
   const [showPassphraseInResult, setShowPassphraseInResult] = useState(false);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
   const [showQrCode, setShowQrCode] = useState(false);
+  
+  // ref for timeout cleanup
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleCreate = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!note.trim()) {
       setError('Message cannot be empty.');
@@ -185,20 +188,26 @@ export default function Home() {
     } finally {
       setIsCreating(false);
     }
-  };
+  }, [note, passphrase, expiry]);
 
-  const copyToClipboard = async () => {
+  const copyToClipboard = useCallback(async () => {
     if (!shareUrl) return;
+    
+    // clear any existing timeout
+    if (copyTimeoutRef.current) {
+      clearTimeout(copyTimeoutRef.current);
+    }
+    
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
-      setTimeout(() => setCopied(false), 1000);
+      copyTimeoutRef.current = setTimeout(() => setCopied(false), 1000);
     } catch (err) {
       console.error('Failed to copy to clipboard:', err);
     }
-  };
+  }, [shareUrl]);
 
-  const generateQRCode = async () => {
+  const generateQRCode = useCallback(async () => {
     if (!shareUrl) return;
     try {
       const dataUrl = await QRCode.toDataURL(shareUrl, {
@@ -214,11 +223,53 @@ export default function Home() {
     } catch (err) {
       console.error('Failed to generate QR code:', err);
     }
-  };
+  }, [shareUrl]);
 
-  const togglePassphraseVisibility = () => {
+  const togglePassphraseVisibility = useCallback(() => {
     setShowPassphrase(!showPassphrase);
-  };
+  }, [showPassphrase]);
+
+  // event handlers for form inputs
+  const handleNoteChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    if (value.length <= MAX_NOTE_LENGTH) {
+      setNote(value);
+    }
+  }, []);
+
+  const handlePassphraseChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value.length <= MAX_PASSPHRASE_LENGTH) {
+      setPassphrase(value);
+    }
+  }, []);
+
+  const handleExpiryChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setExpiry(Number(e.target.value));
+  }, []);
+
+  const togglePassphraseInResult = useCallback(() => {
+    setShowPassphraseInResult(!showPassphraseInResult);
+  }, [showPassphraseInResult]);
+
+  const resetForm = useCallback(() => {
+    setNoteId(null);
+    setError(null);
+    setShareUrl(null);
+    setPassphrase('');
+    setQrCodeDataUrl(null);
+    setShowQrCode(false);
+    setShowPassphraseInResult(false);
+  }, []);
+
+  // cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="min-h-screen bg-page text-text flex items-center justify-center p-4">
@@ -234,12 +285,7 @@ export default function Home() {
               <textarea
                 id="note"
                 value={note}
-                onChange={(e) => {
-                  const value = e.target.value;
-                  if (value.length <= MAX_NOTE_LENGTH) {
-                    setNote(value);
-                  }
-                }}
+                onChange={handleNoteChange}
                 placeholder="Write your secret message..."
                 className="w-full h-64 p-4 bg-input border border-border rounded-lg text-text placeholder-text-secondary resize-y focus:outline-none focus:ring-2 focus:ring-accent"
                 maxLength={MAX_NOTE_LENGTH}
@@ -257,12 +303,7 @@ export default function Home() {
                   type={showPassphrase ? "text" : "password"}
                   id="passphrase"
                   value={passphrase}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (value.length <= MAX_PASSPHRASE_LENGTH) {
-                      setPassphrase(value);
-                    }
-                  }}
+                  onChange={handlePassphraseChange}
                   placeholder="Leave blank for auto-generated key..."
                   className="w-full px-4 h-12 pr-10 bg-input border border-border rounded-lg text-text placeholder-text-secondary focus:outline-none focus:ring-2 focus:ring-accent"
                   maxLength={MAX_PASSPHRASE_LENGTH}
@@ -287,7 +328,7 @@ export default function Home() {
               <select
                 id="expiry"
                 value={expiry}
-                onChange={(e) => setExpiry(Number(e.target.value))}
+                onChange={handleExpiryChange}
                 className="min-w-[120px] px-4 h-12 bg-input border border-border rounded-lg text-text focus:outline-none focus:ring-2 focus:ring-accent"
               >
                 {EXPIRY_OPTIONS.map(opt => (
@@ -360,7 +401,7 @@ export default function Home() {
                         )}
                         <button
                           type="button"
-                          onClick={() => setShowPassphraseInResult(!showPassphraseInResult)}
+                          onClick={togglePassphraseInResult}
                           className="text-xs underline hover:no-underline"
                         >
                           {showPassphraseInResult ? 'Hide' : 'Show'}
@@ -393,15 +434,7 @@ export default function Home() {
               </div>
             </div>
             <button
-              onClick={() => {
-                setNoteId(null);
-                setError(null);
-                setShareUrl(null);
-                setPassphrase('');
-                setQrCodeDataUrl(null);
-                setShowQrCode(false);
-                setShowPassphraseInResult(false);
-              }}
+              onClick={resetForm}
               className="w-full h-12 bg-button hover:bg-button-hover text-text font-medium rounded-lg transition-colors"
             >
               Create Another Note
