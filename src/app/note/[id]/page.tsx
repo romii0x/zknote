@@ -1,9 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams } from 'next/navigation';
 
 const MAX_PASSPHRASE_LENGTH = 128;
+
+interface NoteData {
+  id: string;
+  message: string;
+  iv: string;
+  salt: string | null;
+  deleteToken: string;
+  expiresAt: string;
+  createdAt: string;
+  authTag: string | null;
+}
 
 // conversion helpers
 function base64ToBytes(b64: string): Uint8Array {
@@ -25,19 +36,13 @@ export default function ViewNote() {
   const [isDecrypting, setIsDecrypting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isDecrypted, setIsDecrypted] = useState(false);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [noteData, setNoteData] = useState<any>(null);
+  const [noteData, setNoteData] = useState<NoteData | null>(null);
   const [showPassphrase, setShowPassphrase] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    if (noteId) {
-      loadNote();
-    }
-  }, [noteId]);
-
-  const loadNote = async () => {
+  const loadNote = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     
@@ -66,8 +71,65 @@ export default function ViewNote() {
         const keyParam = new URLSearchParams(hash).get('k');
         console.log('Key param from URL:', keyParam);
         if (keyParam) {
-          // auto-decrypt with key - pass data directly
-          decryptWithKey(keyParam, data);
+          const noteDataToUse = data;
+          
+          if (!noteDataToUse) {
+            console.log('No noteData available for decryption');
+            return;
+          }
+          
+          setIsDecrypting(true);
+          setError(null);
+
+          try {
+            const keyBytes = base64urlToBytes(keyParam);
+            
+            const keyObj = await crypto.subtle.importKey(
+              'raw',
+              keyBytes,
+              { name: 'AES-GCM' },
+              false,
+              ['decrypt']
+            );
+
+            // for key mode, the message includes the auth tag
+            const ciphertext = base64ToBytes(noteDataToUse.message);
+            const iv = base64urlToBytes(noteDataToUse.iv);
+
+            const plaintextBuffer = await crypto.subtle.decrypt(
+              { name: 'AES-GCM', iv },
+              keyObj,
+              ciphertext
+            );
+
+            const plaintext = new TextDecoder().decode(plaintextBuffer);
+            
+            // clean up
+            keyBytes.fill(0);
+            iv.fill(0);
+
+            // delete note
+            try {
+              const response = await fetch(`/api/note/${noteId}/data`, {
+                method: 'DELETE',
+                headers: {
+                  'x-delete-token': noteDataToUse.deleteToken,
+                },
+              });
+              if (!response.ok) {
+                console.error('Failed to delete note');
+              }
+            } catch {
+              console.error('Error deleting note');
+            }
+
+            setNote(plaintext);
+            setIsDecrypted(true);
+          } catch {
+            setError('Failed to decrypt note. Invalid key.');
+          } finally {
+            setIsDecrypting(false);
+          }
           return;
         }
       }
@@ -84,61 +146,25 @@ export default function ViewNote() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [noteId]);
 
-  const decryptWithKey = async (key: string, data?: Record<string, unknown>) => {
-    const noteDataToUse = data || noteData;
-    
-    if (!noteDataToUse) {
-      console.log('No noteData available for decryption');
-      return;
+  useEffect(() => {
+    if (noteId) {
+      loadNote();
     }
-    
-    setIsDecrypting(true);
-    setError(null);
+  }, [noteId, loadNote]);
+
+  // cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (copyTimeoutRef.current) {
+        clearTimeout(copyTimeoutRef.current);
+      }
+    };
+  }, []);
 
 
-
-    try {
-      const keyBytes = base64urlToBytes(key);
-      
-      const keyObj = await crypto.subtle.importKey(
-        'raw',
-        keyBytes,
-        { name: 'AES-GCM' },
-        false,
-        ['decrypt']
-      );
-
-      // for key mode, the message includes the auth tag
-      const ciphertext = base64ToBytes(noteDataToUse.message);
-      const iv = base64urlToBytes(noteDataToUse.iv);
-
-      const plaintextBuffer = await crypto.subtle.decrypt(
-        { name: 'AES-GCM', iv },
-        keyObj,
-        ciphertext
-      );
-
-      const plaintext = new TextDecoder().decode(plaintextBuffer);
-      
-      // clean up
-      keyBytes.fill(0);
-      iv.fill(0);
-
-      // delete note
-      await deleteNote(noteDataToUse);
-
-      setNote(plaintext);
-      setIsDecrypted(true);
-    } catch {
-      setError('Failed to decrypt note. Invalid key.');
-    } finally {
-      setIsDecrypting(false);
-    }
-  };
-
-  const handleDecrypt = async (e: React.FormEvent) => {
+  const handleDecrypt = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!passphrase.trim()) {
       setError('Please enter a passphrase.');
@@ -156,7 +182,7 @@ export default function ViewNote() {
 
     try {
       const enc = new TextEncoder();
-      const salt = base64urlToBytes(noteData.salt);
+      const salt = base64urlToBytes(noteData.salt!);
 
       const keyMaterial = await crypto.subtle.importKey(
         'raw',
@@ -195,7 +221,19 @@ export default function ViewNote() {
       iv.fill(0);
 
       // delete note
-      await deleteNote();
+      try {
+        const response = await fetch(`/api/note/${noteId}/data`, {
+          method: 'DELETE',
+          headers: {
+            'x-delete-token': noteData.deleteToken,
+          },
+        });
+        if (!response.ok) {
+          console.error('Failed to delete note');
+        }
+      } catch {
+        console.error('Error deleting note');
+      }
 
       setNote(plaintext);
       setIsDecrypted(true);
@@ -204,36 +242,27 @@ export default function ViewNote() {
     } finally {
       setIsDecrypting(false);
     }
-  };
+  }, [passphrase, noteData, noteId]);
 
-  const deleteNote = async (data?: Record<string, unknown>) => {
-    const noteDataToUse = data || noteData;
-    try {
-      const response = await fetch(`/api/note/${noteId}/data`, {
-        method: 'DELETE',
-        headers: {
-          'x-delete-token': noteDataToUse.deleteToken,
-        },
-      });
-      if (!response.ok) {
-        console.error('Failed to delete note');
-      }
-    } catch {
-      console.error('Error deleting note');
-    }
-  };
 
-  const copyToClipboard = async () => {
+  const copyToClipboard = useCallback(async () => {
     if (note) {
       try {
         await navigator.clipboard.writeText(note);
         setCopied(true);
-        setTimeout(() => setCopied(false), 1000);
+        if (copyTimeoutRef.current) {
+          clearTimeout(copyTimeoutRef.current);
+        }
+        copyTimeoutRef.current = setTimeout(() => setCopied(false), 1000);
       } catch (err) {
         console.error('Failed to copy:', err);
       }
     }
-  };
+  }, [note]);
+
+  const togglePassphraseVisibility = useCallback(() => {
+    setShowPassphrase(prev => !prev);
+  }, []);
 
   // show loading state
   if (isLoading) {
@@ -299,7 +328,7 @@ export default function ViewNote() {
                     />
                     <button
                       type="button"
-                      onClick={() => setShowPassphrase(!showPassphrase)}
+                      onClick={togglePassphraseVisibility}
                       className="absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded hover:bg-accent transition-colors"
                       aria-label="Toggle password visibility"
                     >
