@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server';
 const RATE_LIMITS = {
   create: { max: 5, window: 60 * 1000 }, // 5 requests per minute
   read: { max: 20, window: 60 * 1000 },  // 20 requests per minute
+  cleanup: { max: 2, window: 60 * 1000 }, // 2 cleanup requests per minute
   global: { max: 100, window: 60 * 1000 } // 100 requests per minute
 };
 
@@ -18,7 +19,7 @@ function getClientIP(request: NextRequest): string {
 }
 
 // checks if request exceeds rate limit
-function checkRateLimit(clientIP: string, type: 'create' | 'read' | 'global'): boolean {
+function checkRateLimit(clientIP: string, type: 'create' | 'read' | 'cleanup' | 'global'): boolean {
   const now = Date.now();
   const key = `${clientIP}:${type}`;
   const limit = RATE_LIMITS[type];
@@ -66,6 +67,15 @@ export function middleware(request: NextRequest) {
     if (!checkRateLimit(clientIP, 'read')) {
       return NextResponse.json(
         { error: 'Too many message requests. Please try again later.' },
+        { status: 429 }
+      );
+    }
+  }
+  
+  if (pathname === '/api/cleanup' && request.method === 'POST') {
+    if (!checkRateLimit(clientIP, 'cleanup')) {
+      return NextResponse.json(
+        { error: 'Too many cleanup requests. Please try again later.' },
         { status: 429 }
       );
     }
